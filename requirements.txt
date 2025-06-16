@@ -2,3 +2,6 @@ flask
 opencv-python-headless
 pyngrok
 python-dotenv
+requests
+# For development purposes, you can also include:                   
+
