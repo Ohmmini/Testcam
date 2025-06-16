@@ -1,0 +1,7 @@
+tunnel: 61314e76-a485-42fd-98e9-f05b82587e87  # ได้จากขั้นตอน create
+credentials-file: C:\Users\nippi\.cloudflared\61314e76-a485-42fd-98e9-f05b82587e87.json
+
+ingress:
+  - hostname: kwangdataisyourspace.space
+    service: http://localhost:5000
+  - service: http_status:404

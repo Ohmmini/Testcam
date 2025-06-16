@@ -1,37 +1,40 @@
-from flask import Flask, Response
-import cv2
 import os
-from pyngrok import ngrok, conf
+from dotenv import load_dotenv
+import cv2
+from flask import Flask, Response, render_template_string
+from pyngrok import ngrok
 
-# โหลด NGROK_AUTH_TOKEN จาก environment
-conf.get_default().auth_token = os.environ.get("NGROK_AUTH_TOKEN")
+load_dotenv()
 
-# โหลด RTSP_URL จาก environment
-RTSP_URL = os.environ.get("RTSP_URL")
-
-# สร้าง ngrok tunnel
-public_url = ngrok.connect(5000)
-print(f"📡 Ngrok URL: {public_url}")
-
-# Flask app
 app = Flask(__name__)
 
-# สร้าง video capture จากกล้อง RTSP
-cap = cv2.VideoCapture(RTSP_URL)
+# อ่านค่าจาก Environment Variable
+rtsp_url = os.getenv("RTSP_URL")
 
 def generate_frames():
+    cap = cv2.VideoCapture(rtsp_url)
     while True:
         success, frame = cap.read()
         if not success:
+            print("⚠️ ไม่สามารถอ่านเฟรมจากกล้อง RTSP ได้")
             break
-        _, buffer = cv2.imencode('.jpg', frame)
-        frame_bytes = buffer.tobytes()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+        else:
+            _, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 @app.route('/')
 def index():
-    return "<h1>Camera Feed</h1><img src='/video'>"
+    return render_template_string("""
+        <html>
+        <head><title>Camera Feed</title></head>
+        <body>
+            <h1>Camera Feed</h1>
+            <img src="/video" width="640" />
+        </body>
+        </html>
+    """)
 
 @app.route('/video')
 def video():
@@ -39,5 +42,5 @@ def video():
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
-    # ให้ Flask รันบน 0.0.0.0 เพื่อให้ Render ตรวจเจอ port
+    # ไม่ต้อง set_auth_token หรือ ngrok.connect()
     app.run(host='0.0.0.0', port=5000)
