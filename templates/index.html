@@ -1,20 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>เข้าสู่ระบบกล้องวงจรปิด</title>
+  <title>Smart City เมืองแม่ฮ่องสอน</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
-  <div class="text-center">
-    <h1 class="text-3xl font-bold mb-6">🎥 เข้าสู่ระบบกล้องวงจรปิด</h1>
-    <button 
-      onclick="window.location.href='camera.html'"
-      class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-200"
-    >
-      คลิกเพื่อเข้าชมกล้อง
-    </button>
+
+<body class="text-white min-h-screen flex flex-col items-center justify-center">
+
+  <!-- โลโก้ -->
+<div class="mb-6">
+  <a href="https://www.mmhs.go.th/mmhs.html" target="_blank" class="group">
+    <img src="{{ url_for('static', filename='logo_main.png') }}"
+         alt="โลโก้เทศบาลเมืองแม่ฮ่องสอน"
+         class="w-40 h-40 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg transition duration-300 transform group-hover:scale-110 group-hover:shadow-2xl" />
+  </a>
+</div>
+
+
+  <!-- ชื่อเมือง -->
+  <h1 class="text-4xl font-bold mb-8 drop-shadow-lg">ระบบ Smart City เทศบาลเมืองแม่ฮ่องสอน</h1>
+
+  <!-- ปุ่มเมนู -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+    <div onclick="window.location.href='/camera'" class="card-menu bg-blue-600 hover:bg-blue-700">
+      <div class="text-4xl mb-2">📹</div>
+      <div class="text-xl font-semibold">CCTV</div>
+    </div>
+
+    <div onclick="window.location.href='/ev'" class="card-menu bg-green-600 hover:bg-green-700">
+      <div class="text-4xl mb-2">⚡</div>
+      <div class="text-xl font-semibold">EV Charger</div>
+    </div>
+
+    <div onclick="window.location.href='/solar'" class="card-menu bg-yellow-500 hover:bg-yellow-600 text-black">
+      <div class="text-4xl mb-2">☀️</div>
+      <div class="text-xl font-semibold">Solar Cell</div>
+    </div>
   </div>
+
 </body>
+
 </html>

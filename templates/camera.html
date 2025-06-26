@@ -1,17 +1,128 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CCTV Live</title>
+  <title>CCTV Live | เมืองแม่ฮ่องสอน</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
-  <div class="text-center">
-    <h1 class="text-3xl font-bold mb-6">📹 CCTV Live</h1>
-    <div class="border-4 border-blue-500 rounded-xl overflow-hidden shadow-lg inline-block">
-      <img src="/video" alt="Live Stream" class="w-[640px] h-[480px] object-cover" />
+
+<body class="text-white min-h-screen flex flex-col items-center justify-center">
+
+  <!-- โลโก้ -->
+  <div class="mt-4 mb-2">
+    <img src="{{ url_for('static', filename='logo_main.png') }}" alt="โลโก้เทศบาลเมืองแม่ฮ่องสอน"
+      class="w-24 h-24 rounded-full shadow-lg border-2 border-white" />
+  </div>
+
+  <!-- หัวข้อ -->
+  <h1 class="text-3xl font-bold mb-6 drop-shadow-lg">📹 CCTV Live – เมืองแม่ฮ่องสอน</h1>
+
+
+
+ <div class="space-y-4 max-w-xl mx-auto">
+  {% for cam in cameras %}
+  <div class="bg-white p-4 rounded shadow space-y-2">
+    <div class="flex justify-between items-center">
+      <span class="text-black font-semibold">📷 กล้อง : {{ cam.name }}</span>
+      <form method="POST" action="{{ url_for('delete_camera', camera_id=cam.id) }}">
+        <button type="submit" onclick="return confirm('ยืนยันการลบกล้องนี้หรือไม่?')" 
+                class="text-red-500 hover:text-red-700">🗑️ ลบ</button>
+      </form>
+    </div>
+
+    <!-- วิดีโอ + เปิด modal -->
+    <img src="{{ url_for('video', camera_id=cam.id) }}"
+     alt="stream"
+     class="w-full h-[300px] object-cover border border-gray-300 cursor-pointer hover:scale-105 transition"
+     onclick='openModal("{{ url_for("video", camera_id=cam.id) }}")' />
+
+  </div>
+  {% endfor %}
+</div>
+
+
+
+  <!-- ปุ่มควบคุม -->
+  <div class="mt-8 flex gap-4">
+    <a href="/" class="bg-white text-black px-4 py-2 rounded-xl shadow hover:bg-gray-200 transition">
+      ← กลับหน้าหลัก
+    </a>
+    <button id="toggleAddBtn" onclick="toggleForm()"
+      class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl shadow">
+      ➕ เพิ่มกล้อง
+    </button>
+  </div>
+
+
+  <!-- ฟอร์มเพิ่มกล้อง (ซ่อนตอนแรก) -->
+  <div id="addCameraForm" class="hidden mt-6 mb-8 bg-black bg-opacity-60 p-6 rounded-xl shadow-lg w-full md:w-2/3">
+    <form method="POST" class="flex flex-col gap-4">
+
+      <label class="text-white font-semibold">ชื่อกล้อง</label>
+      <input name="name" type="text" placeholder="เช่น กล้องทางเข้า"
+        class="w-full px-4 py-2 rounded border border-gray-300 text-black" required>
+
+      <label class="text-white font-semibold">RTSP URL</label>
+      <input name="rtsp_url" type="text" placeholder="rtsp://..."
+        class="w-full px-4 py-2 rounded border border-gray-300 text-black" required>
+
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold">
+        ✅ ยืนยัน
+      </button>
+    </form>
+  </div>
+
+  <!-- วิดีโอ Modal -->
+  <div id="videoModal" class="fixed inset-0 bg-black bg-opacity-80 hidden flex items-center justify-center z-50">
+    <div class="relative bg-white rounded-xl overflow-hidden shadow-xl max-w-4xl w-full">
+      <!-- ปุ่มปิด -->
+      <button onclick="closeModal()"
+        class="absolute top-2 right-2 text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded">
+        ❌
+      </button>
+      <img id="modalVideo" src="" alt="Expanded Video" class="w-full h-[600px] object-cover" />
     </div>
   </div>
+
+
+
+
+
+
+  <!-- JavaScript -->
+  <script>
+    function toggleForm() {
+      const form = document.getElementById('addCameraForm');
+      form.classList.toggle('hidden');
+    }
+  </script>
+
+  <script>
+    // ปิดฟอร์มเมื่อคลิกนอกฟอร์ม
+    document.addEventListener('click', function (event) {
+      const form = document.getElementById('addCameraForm');
+      if (!form.contains(event.target) && !event.target.closest('#toggleAddBtn')) {
+        form.classList.add('hidden');
+      }
+    });
+  </script>
+
+  <script>
+    function openModal(videoSrc) {
+      document.getElementById('modalVideo').src = videoSrc;
+      document.getElementById('videoModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modalVideo').src = "";
+      document.getElementById('videoModal').classList.add('hidden');
+    }
+  </script>
+
+
 </body>
+
 </html>
