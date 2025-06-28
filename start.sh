@@ -11,7 +11,7 @@ echo "tunnel: $TUNNEL_ID
 credentials-file: $CREDENTIALS_FILE
 ingress:
   - hostname: $HOSTNAME
-    service: kwangdataisyourspace.space
+    service: http://testcam.onrender.com
   - service: http_status:404" > config.yml
 
 # ✅ รัน tunnel
