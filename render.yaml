@@ -6,5 +6,5 @@ services:
     startCommand: ./start.sh
     env:
       TUNNEL_ID: 61314e76-a485-42fd-98e9-f05b82587e87
-      CREDENTIALS_FILE: /app/61314e76-a485-42fd-98e9-f05b82587e87.json
+      CREDENTIALS_FILE: /61314e76-a485-42fd-98e9-f05b82587e87.json
       HOSTNAME: kwangdataisyourspace.space
