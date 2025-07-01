@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>แผนที่กล้อง CCTV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-gray-100">
+
+  <div class="flex h-screen">
+    <!-- แผนที่ -->
+    <div id="map" class="w-1/2 h-full"></div>
+
+    <!-- กล้องสด -->
+    <div class="w-1/2 h-full p-4 overflow-y-auto bg-white shadow-lg">
+      <h1 class="text-2xl font-bold mb-4 text-gray-800">📹 กล้องที่เลือก</h1>
+      
+      <!-- กล้องเริ่มต้น -->
+      <div id="camera-box" class="hidden">
+        <h2 id="camera-name" class="text-xl font-semibold mb-2 text-gray-700"></h2>
+        <img id="camera-video" src="" alt="Live Feed"
+             class="w-full h-[360px] object-cover border rounded shadow mb-4" />
+        <a id="camera-link" href="#" target="_blank"
+           class="text-blue-600 hover:underline">🔗 เปิดกล้องแบบเต็ม</a>
+      </div>
+
+      <p id="no-camera" class="text-gray-500">กรุณาคลิกที่หมุดบนแผนที่เพื่อดูภาพกล้อง</p>
+    </div>
+  </div>
+
+  <script>
+    const cameras = {{ cameras | tojson }};
+    const map = L.map('map').setView([19.3023, 97.9654], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    cameras.forEach(cam => {
+      if (cam.latitude && cam.longitude) {
+        const marker = L.marker([cam.latitude, cam.longitude]).addTo(map);
+        marker.bindPopup(`<strong>${cam.name}</strong><br>คลิกเพื่อดูภาพกล้อง`);
+
+        marker.on('click', () => {
+          document.getElementById('camera-box').classList.remove('hidden');
+          document.getElementById('no-camera').classList.add('hidden');
+          document.getElementById('camera-name').innerText = cam.name;
+          document.getElementById('camera-video').src = `/video/${cam.id}`;
+          document.getElementById('camera-link').href = `/video/${cam.id}`;
+        });
+      }
+    });
+  </script>
+
+</body>
+</html>

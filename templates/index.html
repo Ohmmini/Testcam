@@ -4,43 +4,176 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smart City เมืองแม่ฮ่องสอน</title>
+  <title>Smart City Platform เทศบาลเมืองแม่ฮ่องสอน</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-in-up {
+      animation: fadeInUp 1s ease-out forwards;
+    }
+
+    .delay-100 {
+      animation-delay: 0.1s;
+    }
+
+    .delay-300 {
+      animation-delay: 0.3s;
+    }
+
+    .delay-500 {
+      animation-delay: 0.5s;
+    }
+
+    .delay-700 {
+      animation-delay: 0.7s;
+    }
+  </style>
 </head>
 
-<body class="text-white min-h-screen flex flex-col items-center justify-center">
 
-  <!-- โลโก้ -->
-<div class="mb-6">
-  <a href="https://www.mmhs.go.th/mmhs.html" target="_blank" class="group">
-    <img src="{{ url_for('static', filename='logo_main.png') }}"
-         alt="โลโก้เทศบาลเมืองแม่ฮ่องสอน"
-         class="w-40 h-40 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg transition duration-300 transform group-hover:scale-110 group-hover:shadow-2xl" />
-  </a>
+  <!-- เมนูหลัก -->
+<!-- เมนูหลัก -->
+<div class="absolute top-36 left-20 right-20 px-8 py-8 flex justify-start flex-wrap gap-8
+            text-xl font-extrabold uppercase text-white z-50 animate-fade-in-up delay-100"
+     style="letter-spacing: 0.15em;">
+<!-- CCTV Card -->
+<div onclick="window.location.href='/camera'"
+     class="card-menu group cursor-pointer rounded-xl overflow-hidden
+            w-[300px] h-[350px] shadow-xl transform transition-transform hover:scale-102 relative mx-10">
+
+  <div class="absolute inset-0 bg-blue-700 group-hover:hidden flex flex-col items-center justify-center px-30 py-30 text-white text-center z-30">
+    <div class="text-5xl mb-4">📹</div>
+    <div class="text-xl tracking-wider">CCTV</div>
+  </div>
+
+  <img src="{{ url_for('static', filename='camera_card.jpg') }}"
+       class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
+</div>
+
+<!-- Solar Cell Card -->
+<div onclick="window.location.href='https://momayresident.web.app/'"
+     class="card-menu group cursor-pointer rounded-xl overflow-hidden
+            w-[300px] h-[350px] shadow-xl transform transition-transform hover:scale-102 relative mx-10">
+
+  <div class="absolute inset-0 bg-yellow-700 group-hover:hidden flex flex-col items-center justify-center px-30 py-30 text-white text-center z-30">
+    <div class="text-5xl mb-4">☀️</div>
+    <div class="text-xl tracking-wider">SOLAR CELL</div>
+  </div>
+
+  <img src="{{ url_for('static', filename='solar_card.jpg') }}"
+       class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
+</div>
+
+<!-- EV Charger Card -->
+<div onclick="window.location.href='/ev'"
+     class="card-menu group cursor-pointer rounded-xl overflow-hidden
+            w-[300px] h-[350px] shadow-xl transform transition-transform hover:scale-102 relative  mx-10">
+
+  <div class="absolute inset-0 bg-green-700 group-hover:hidden flex flex-col items-center justify-center px-30 py-30 text-white text-center z-30">
+    <div class="text-5xl mb-4">⚡</div>
+    <div class="text-xl tracking-wider">EV CHARGER</div>
+  </div>
+
+  <img src="{{ url_for('static', filename='ev_card.jpg') }}"
+       class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
+</div>
+
+<!-- Access Control Card -->
+<div onclick="window.location.href='/Accesscontrol'"
+     class="card-menu group cursor-pointer rounded-xl overflow-hidden
+            w-[300px] h-[350px] shadow-xl transform transition-transform hover:scale-102 relative  mx-10">
+
+  <div class="absolute inset-0 bg-red-700 group-hover:hidden flex flex-col items-center justify-center px-30 py-30 text-white text-center z-30">
+    <div class="text-5xl mb-4">🪪</i></div>
+    <div class="text-xl tracking-wider">Access Control</div>
+  </div>
+
+  <img src="{{ url_for('static', filename='Access_card.png') }}"
+       class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
 </div>
 
 
-  <!-- ชื่อเมือง -->
-  <h1 class="text-4xl font-bold mb-8 drop-shadow-lg">ระบบ Smart City เทศบาลเมืองแม่ฮ่องสอน</h1>
 
-  <!-- ปุ่มเมนู -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-    <div onclick="window.location.href='/camera'" class="card-menu bg-blue-600 hover:bg-blue-700">
-      <div class="text-4xl mb-2">📹</div>
-      <div class="text-xl font-semibold">CCTV</div>
-    </div>
+</div>
 
-    <div onclick="window.location.href='/ev'" class="card-menu bg-green-600 hover:bg-green-700">
-      <div class="text-4xl mb-2">⚡</div>
-      <div class="text-xl font-semibold">EV Charger</div>
-    </div>
 
-    <div onclick="window.location.href='/solar'" class="card-menu bg-yellow-500 hover:bg-yellow-600 text-black">
-      <div class="text-4xl mb-2">☀️</div>
-      <div class="text-xl font-semibold">Solar Cell</div>
-    </div>
+
+
+  <!-- หัวเว็บ -->
+  <div class="absolute top-4 left-4 flex items-center gap-6 z-50 animate-fade-in-up delay-500">
+    <h1 class="text-white text-xl font-bold drop-shadow-lg whitespace-nowrap">
+      Smart City Platform เทศบาลเมืองแม่ฮ่องสอน
+    </h1>
   </div>
+
+  <!-- โลโก้ -->
+<div class="absolute top-4 right-4 flex items-center gap-6 z-50 animate-fade-in-up delay-500">
+  <a href="https://www.mmhs.go.th/mmhs.html" target="_blank" rel="noopener noreferrer">
+
+
+    <img src="{{ url_for('static', filename='logo_main.png') }}"
+         class="w-24 h-24 rounded-full border-4 border-white shadow cursor-pointer" />
+  </a>
+  <a href="https://kwangunlimit.com" target="_blank" rel="noopener noreferrer">
+    <img src="{{ url_for('static', filename='kwanglogo.png') }}"
+         class="w-24 h-24 rounded-full border-4 border-white shadow cursor-pointer" />
+  </a>
+</div>
+  <!-- วันที่ เวลา สภาพอากาศ -->
+  <div id="weather-time"
+    class="fixed bottom-4 right-4 bg-white bg-opacity-20 text-white text-sm p-4 rounded-xl shadow-xl backdrop-blur-md z-50 animate-fade-in-up delay-700">
+    <div id="datetime" class="mb-1 font-semibold">กำลังโหลดเวลา...</div>
+    <div id="weather" class="font-light">กำลังโหลดสภาพอากาศ...</div>
+  </div>
+
+  <!-- JavaScript สำหรับเวลา -->
+  <script>
+    function updateDateTime() {
+      const now = new Date();
+      const options = {
+        weekday: 'long', year: 'numeric', month: 'long',
+        day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
+      };
+      document.getElementById('datetime').innerText = now.toLocaleDateString('th-TH', options);
+    }
+
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+  </script>
+
+  <!-- JavaScript สำหรับสภาพอากาศ -->
+  <script>
+    const apiKey = "YOUR_OPENWEATHERMAP_API_KEY"; // 🔑 ใส่ API Key จริง
+    const city = "Mae Hong Son,TH";
+
+    async function fetchWeather() {
+      try {
+        const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric&lang=th`;
+        const response = await fetch(url);
+        const data = await response.json();
+        const temp = data.main.temp.toFixed(1);
+        const desc = data.weather[0].description;
+        document.getElementById('weather').innerText = `🌡 ${temp}°C | ${desc}`;
+      } catch (error) {
+        document.getElementById('weather').innerText = "ไม่สามารถโหลดสภาพอากาศ";
+        console.error(error);
+      }
+    }
+
+    fetchWeather();
+    setInterval(fetchWeather, 10 * 60 * 1000); // อัปเดตทุก 10 นาที
+  </script>
 
 </body>
 
