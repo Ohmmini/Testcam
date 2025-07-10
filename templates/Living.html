@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collaborative sensing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+   
+  </style>
+</head>
+
+<body class="bg-gray-900 min-h-screen relative overflow-x-hidden">
+
+  <!-- หัวเว็บ -->
+  <div class="header-top-left animate-fade-in-up delay-500">
+  </div>
+
+
+  <!-- เมนูหลัก -->
+  <div class="main-menu animate-fade-in-up delay-100">
+    <!-- CCTV Card -->
+    <div onclick="window.location.href='/camera'" class="card-menu">
+      <div class="absolute inset-0 bg-blue-700 flex flex-col items-center justify-center text-white text-center">
+        <div class="text-5xl mb-4">📹</div>
+        <div class="text-xl tracking-wider">CCTV</div>
+      </div>
+      <img src="{{ url_for('static', filename='camera_card.jpg') }}" alt="CCTV" />
+    </div>
+
+  
+
+
+
+</body>
+
+</html>

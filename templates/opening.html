@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>Menupage with Emoji Top-Left & Center Text</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .responsive-wrapper {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 2rem;
+    }
+
+    .function_card {
+      position: relative;
+      background-color: rgba(45, 55, 72, 0.3);
+      border-radius: 0.5rem;
+      box-sizing: border-box;
+      font-size: 1.125rem;
+      width: 300px;
+      height: 400px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      overflow: hidden;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .emoji_icon {
+      font-size: 2.5rem;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .topic_text {
+      font-size: 1.25rem;
+      font-weight: 300;
+      text-shadow: 0 0 1px rgba(255,255,255,0.4);
+    }
+
+    .switch-section {
+      margin-top: 1rem;
+      color: #b0e0e6;
+      font-weight: 300;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      position: absolute;
+      top: 3.5rem;
+      left: 1rem;
+      right: 1rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Slide animations */
+    .slide-in-right {
+      animation: slideInRight 0.6s forwards;
+      display: flex !important;
+      position: absolute;
+      top: 3.5rem;
+      left: 1rem;
+      right: 1rem;
+    }
+
+    .slide-out-left {
+      animation: slideOutLeft 0.6s forwards;
+      display: flex !important;
+      position: absolute;
+      top: 3.5rem;
+      left: 1rem;
+      right: 1rem;
+    }
+
+    .slide-in-left {
+      animation: slideInLeft 0.6s forwards;
+      display: flex !important;
+      position: absolute;
+      top: 3.5rem;
+      left: 1rem;
+      right: 1rem;
+    }
+
+    .slide-out-right {
+      animation: slideOutRight 0.6s forwards;
+      display: flex !important;
+      position: absolute;
+      top: 3.5rem;
+      left: 1rem;
+      right: 1rem;
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes slideOutLeft {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(-100%); opacity: 0; }
+    }
+
+    @keyframes slideInLeft {
+      from { transform: translateX(-100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes slideOutRight {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+
+    /* Weather and AQI text styling */
+    #weather-city, #aqi-city {
+      font-size: 1.5rem;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+
+    #weather-icon, #aqi-icon {
+      font-size: 3.5rem;
+      line-height: 1;
+    }
+
+    #weather-temp, #aqi-value {
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    #weather-desc, #aqi-desc {
+      font-size: 1.25rem;
+      font-style: italic;
+      text-align: center;
+    }
+
+    @media (max-width: 640px) {
+      .function_card {
+        width: 140px;
+        height: 280px;
+        font-size: 1rem;
+        padding: 1rem;
+      }
+      .emoji_icon {
+        font-size: 2rem;
+      }
+      .topic_text {
+        font-size: 1rem;
+      }
+      #weather-icon, #aqi-icon {
+        font-size: 2rem;
+      }
+      #weather-temp, #aqi-value {
+        font-size: 1.25rem;
+      }
+      #weather-desc, #aqi-desc {
+        font-size: 0.875rem;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .function_card {
+        width: 100px;
+        height: 200px;
+        font-size: 0.875rem;
+        padding: 0.75rem;
+      }
+      .emoji_icon {
+        font-size: 1.5rem;
+      }
+      .topic_text {
+        font-size: 0.875rem;
+      }
+      #weather-icon, #aqi-icon {
+        font-size: 1.5rem;
+      }
+      #weather-temp, #aqi-value {
+        font-size: 1rem;
+      }
+      #weather-desc, #aqi-desc {
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body class="bg-black text-white min-h-screen">
+
+  <div class="responsive-wrapper">
+    <div class="function_card">
+      <div class="header">
+        <span class="emoji_icon">🪙</span>
+        <span class="topic_text">Smart Economy</span>
+      </div>
+    </div>
+
+    <div class="function_card" style="position: relative;">
+      <div class="header">
+        <span class="emoji_icon">🌏</span>
+        <span class="topic_text">Smart Environment</span>
+      </div>
+
+      <div id="weather" class="switch-section">
+        <span id="weather-city"></span>
+        <span id="weather-icon"></span>
+        <span id="weather-temp"></span>
+        <span id="weather-desc"></span>
+      </div>
+
+      <div id="aqi" class="switch-section hidden">
+        <span id="aqi-city"></span>
+        <span id="aqi-icon"></span>
+        <span id="aqi-value"></span>
+        <span id="aqi-desc"></span>
+      </div>
+    </div>
+
+    <div class="function_card">
+      <div class="header">
+        <span class="emoji_icon">🏛️</span>
+        <span class="topic_text">Smart Governance</span>
+      </div>
+    </div>
+
+<a href="/Living" style="text-decoration: none;">
+  <div class="function_card hover:shadow-lg transition">
+    <div class="header">
+      <span class="emoji_icon">🏠</span>
+      <span class="topic_text">Smart Living</span>
+    </div>
+    <div id="camera-names" class="mt-2 text-sm text-white/70"></div>
+  </div>
+</a>
+
+    <div class="function_card">
+      <div class="header">
+        <span class="emoji_icon">🧑🏻‍🤝‍🧑🏼</span>
+        <span class="topic_text">Smart People</span>
+      </div>
+    </div>
+
+    <div class="function_card">
+      <div class="header">
+        <span class="emoji_icon">💡</span>
+        <span class="topic_text">Smart Energy</span>
+      </div>
+    </div>
+
+    <div class="function_card">
+      <div class="header">
+        <span class="emoji_icon">🚌</span>
+        <span class="topic_text">Smart Mobility</span>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const apiKey = "9ba28f605e85242189e0c018fb078855";
+  const city = "Mae Hong Son,TH";
+  const lat = 19.3010;  // พิกัดแม่ฮ่องสอน
+  const lon = 97.9654;
+
+  function getWeatherEmoji(description) {
+    const desc = description.toLowerCase();
+    if (desc.includes("แจ่มใส") || desc.includes("ฟ้าโปร่ง")) return "☀️";
+    if (desc.includes("เมฆบางส่วน")) return "🌤️";
+    if (desc.includes("เมฆกระจาย")) return "⛅";
+    if (desc.includes("มีเมฆมาก") || desc.includes("เมฆเป็นส่วนมาก")) return "🌥️";
+    if (desc.includes("เมฆเต็มท้องฟ้า") || desc.includes("เมฆหนาแน่น")) return "☁️";
+    if (desc.includes("ฝนเล็กน้อย") || desc.includes("ฝนเบา")) return "🌦️";
+    if (desc.includes("ฝน") || desc.includes("ฝนตก")) return "🌧️";
+    if (desc.includes("ฝนฟ้าคะนอง") || desc.includes("ฟ้าร้อง")) return "⛈️";
+    if (desc.includes("หิมะ")) return "❄️";
+    if (desc.includes("หมอก") || desc.includes("หมอกควัน") || desc.includes("ควัน")) return "🌫️";
+    if (desc.includes("พายุ") || desc.includes("ลมแรง")) return "🌪️";
+    return "🌡️";
+  }
+
+  function getAQIEmoji(aqi) {
+    return ["🟢", "🟡", "🟠", "🔴", "⚫"][aqi - 1] || "❓";
+  }
+
+  function getAQIDesc(aqi) {
+    return ["ดีมาก", "ดี", "ปานกลาง", "ไม่ดี", "อันตราย"][aqi - 1] || "ไม่ทราบค่า";
+  }
+
+  async function fetchWeather() {
+    try {
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric&lang=th`;
+      const response = await fetch(url);
+      const data = await response.json();
+
+      const temp = data.main.temp.toFixed(1) + "°C";
+      const desc = data.weather[0].description;
+      const emoji = getWeatherEmoji(desc);
+      const cityName = data.name;
+
+      document.getElementById('weather-city').innerText = cityName;
+      document.getElementById('weather-icon').innerText = emoji;
+      document.getElementById('weather-temp').innerText = temp;
+      document.getElementById('weather-desc').innerText = desc;
+
+    } catch (error) {
+      document.getElementById('weather-city').innerText = "";
+      document.getElementById('weather-icon').innerText = "❌";
+      document.getElementById('weather-temp').innerText = "ไม่สามารถโหลดสภาพอากาศ";
+      document.getElementById('weather-desc').innerText = "";
+      console.error(error);
+    }
+  }
+
+  async function fetchAQI() {
+    try {
+      const url = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${apiKey}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      const aqi = data.list[0].main.aqi;
+
+      document.getElementById('aqi-city').innerText = "แม่ฮ่องสอน";
+      document.getElementById('aqi-icon').innerText = getAQIEmoji(aqi);
+      document.getElementById('aqi-value').innerText = "AQI: " + aqi;
+      document.getElementById('aqi-desc').innerText = getAQIDesc(aqi);
+
+    } catch (error) {
+      console.error("AQI fetch error", error);
+      document.getElementById('aqi-city').innerText = "ไม่สามารถโหลด AQI";
+      document.getElementById('aqi-icon').innerText = "❌";
+      document.getElementById('aqi-value').innerText = "";
+      document.getElementById('aqi-desc').innerText = "";
+    }
+  }
+
+  function toggleSections() {
+    const weather = document.getElementById("weather");
+    const aqi = document.getElementById("aqi");
+
+    if (weather.classList.contains("hidden")) {
+      // weather ซ่อนอยู่ => aqi slide out left, weather slide in right
+      aqi.classList.remove("slide-in-left");
+      aqi.classList.add("slide-out-left");
+      weather.classList.remove("hidden");
+      weather.classList.remove("slide-out-right");
+      weather.classList.add("slide-in-right");
+
+      setTimeout(() => {
+        aqi.classList.add("hidden");
+        aqi.classList.remove("slide-out-left");
+      }, 600);
+    } else {
+      // weather แสดงอยู่ => weather slide out right, aqi slide in left
+      weather.classList.remove("slide-in-right");
+      weather.classList.add("slide-out-right");
+      aqi.classList.remove("hidden");
+      aqi.classList.remove("slide-out-left");
+      aqi.classList.add("slide-in-left");
+
+      setTimeout(() => {
+        weather.classList.add("hidden");
+        weather.classList.remove("slide-out-right");
+      }, 600);
+    }
+  }
+
+  // เริ่มต้นให้โชว์ weather ก่อน
+  document.getElementById("weather").classList.remove("hidden");
+  document.getElementById("weather").classList.add("slide-in-right");
+  document.getElementById("aqi").classList.add("hidden");
+
+  // โหลดข้อมูล
+  fetchWeather();
+  fetchAQI();
+
+  // อัพเดตข้อมูลทุก 10 นาที
+  setInterval(fetchWeather, 10 * 60 * 1000);
+  setInterval(fetchAQI, 10 * 60 * 1000);
+
+  // สลับแสดง weather กับ AQI ทุก 10 วินาที
+  setInterval(toggleSections, 10000);
+</script>
+<script>
+fetch("cameras.json")
+  .then(res => res.json())
+  .then(data => {
+    const container = document.getElementById("camera-names");
+    if (container && data.length > 0) {
+      const names = data.map(cam => `📷 ${cam.name || "Unnamed"}`).join("<br>");
+      container.innerHTML = names;
+    } else {
+      container.innerHTML = "ไม่พบกล้อง";
+    }
+  })
+  .catch(err => {
+    console.error("Error loading cameras.json:", err);
+    const container = document.getElementById("camera-names");
+    if (container) container.innerHTML = "เกิดข้อผิดพลาดในการโหลดกล้อง";
+  });
+</script>
+
+
+</body>
+</html>

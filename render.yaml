@@ -1,10 +1,8 @@
+# render.yaml
 services:
-  - type: worker
-    name: cloudflared-tunnel
-    runtime: docker
-    buildCommand: ""
-    startCommand: ./start.sh
-    env:
-      TUNNEL_ID: 61314e76-a485-42fd-98e9-f05b82587e87
-      CREDENTIALS_FILE: /61314e76-a485-42fd-98e9-f05b82587e87.json
-      HOSTNAME: kwangdataisyourspace.space
+  - type: web
+    name: flask-app
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    plan: free

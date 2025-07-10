@@ -16,38 +16,57 @@
   <style>
     /* แผนที่หลัก war room */
     #mainMap {
-      width: 100%;
-      max-width: 900px;
-      height: 400px;
-      border: 1px solid #ccc;
-      border-radius: 0.5rem;
-      margin-top: 1rem;
-      transition: opacity 0.3s ease;
-    }
+  width: 100%;
+  height: 60vh; /* เพิ่มจาก 40vh เป็น 60vh */
+  max-height: 600px; /* หรือถ้าต้องการกำหนดสูงสุด */
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  margin-top: 1rem;
+  transition: opacity 0.3s ease;
+}
 
     /* ปุ่มเลือกกริด */
-#gridControls {
-  position: fixed;         /* 🔒 ล็อกติดจอ */
-  top: 8rem;               /* 🟢 ระยะห่างจากขอบบน */
-  left: 19rem;              /* 🟢 ระยะห่างจากขอบซ้าย */
-  display: flex;
-  gap: 0.5rem;
-  z-index: 999;            /* 🔝 ให้อยู่เหนือสุด */
-  padding: 0.5rem 1rem;
-  border-radius: 1rem;
-  font-size: 1.25rem;
-  cursor: pointer;
-}
+    #gridControls {
+      position: fixed;
+      top: 6rem;
+      left: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      z-index: 999;
+      padding: 0.5rem 1rem;
+      border-radius: 1rem;
+      font-size: 1.25rem;
+      cursor: pointer;
+      background: rgba(31, 41, 55, 0.9); /* Tailwind gray-800 semi-transparent */
+    }
 
     /* warroom video grid */
     #videoGrid {
-      max-width: 900px;
       width: 100%;
       display: grid;
-      grid-template-columns: repeat(2, 1fr); /* default 2x2 */
       gap: 12px;
       margin-top: 1rem;
       margin-bottom: 2rem;
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* ปรับ grid columns ตามหน้าจอ */
+    @media (max-width: 768px) {
+      #videoGrid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (min-width: 768px) and (max-width: 1024px) {
+      #videoGrid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 1025px) {
+      #videoGrid {
+        grid-template-columns: repeat(4, 1fr);
+      }
     }
 
     /* wrapper video + caption + delete */
@@ -67,6 +86,7 @@
       cursor: pointer;
       display: block;
       transition: transform 0.2s ease;
+      border-radius: 0.5rem;
     }
 
     #videoGrid img:hover {
@@ -97,7 +117,7 @@
       position: absolute;
       top: 4px;
       right: 4px;
-      background: rgba(255, 0, 0, 0.8);
+      background: rgba(220, 38, 38, 0.8); /* red-600 */
       color: white;
       border: none;
       border-radius: 50%;
@@ -112,7 +132,7 @@
     }
 
     .delete-btn:hover {
-      background: rgba(255, 0, 0, 1);
+      background: rgba(220, 38, 38, 1); /* red-700 */
     }
 
     /* modal เพิ่มกล้อง */
@@ -124,13 +144,14 @@
       align-items: center;
       justify-content: center;
       z-index: 1000;
+      padding: 1rem;
     }
 
     #addCameraModal > div {
       background-color: rgba(0, 0, 0, 0.9);
       border-radius: 1rem;
       padding: 1.5rem;
-      width: 90%;
+      width: 100%;
       max-width: 480px;
       max-height: 80vh;
       overflow-y: auto;
@@ -149,6 +170,7 @@
       align-items: center;
       justify-content: center;
       z-index: 1100;
+      padding: 1rem;
     }
 
     #videoModal > div {
@@ -189,20 +211,21 @@
 
     /* ปุ่มเพิ่มกล้อง และ รายชื่อกล้อง container อยู่ขวาสุด เรียงลง */
     #topButtons {
-      max-width: 900px;
       width: 100%;
       display: flex;
       flex-direction: column;
       align-items: flex-end;
       gap: 0.5rem;
       margin-bottom: 1rem;
-      position: relative;
+      padding: 0 1rem;
     }
 
     /* ปุ่ม container แนวนอน (แถวเดียว) */
     #topButtonsRow {
       display: flex;
       gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     /* ปุ่มเพิ่มกล้อง */
@@ -211,11 +234,12 @@
       color: white;
       padding: 0.5rem 1rem;
       border-radius: 1rem;
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       cursor: pointer;
       box-shadow: 0 4px 8px rgba(22, 163, 74, 0.7);
       transition: background-color 0.2s ease;
       border: none;
+      white-space: nowrap;
     }
 
     #toggleAddBtn:hover {
@@ -228,11 +252,12 @@
       color: white;
       padding: 0.5rem 1rem;
       border-radius: 1rem;
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       cursor: pointer;
       box-shadow: 0 4px 8px rgba(37, 99, 235, 0.7);
       transition: background-color 0.2s ease;
       border: none;
+      white-space: nowrap;
       position: relative;
       z-index: 50;
     }
@@ -254,8 +279,8 @@
       color: white;
       display: none;
       margin-top: 0.5rem;
-      z-index: 40;
       user-select: none;
+      z-index: 40;
     }
 
     #cameraListDropdown h3 {
@@ -305,27 +330,41 @@
       text-align: center;
       margin-top: 1rem;
     }
+      body {
+    padding-inline: 1rem; /* ซ้าย-ขวา 16px */
+  }
+
+  @media (min-width: 768px) {
+    body {
+      padding-inline: 2rem; /* ซ้าย-ขวา 32px */
+    }
+  }
+
+  @media (min-width: 1280px) {
+    body {
+      padding-inline: 4rem; /* ซ้าย-ขวา 64px */
+    }
+  }
   </style>
 </head>
 
-<body class="bg-gray-900 text-white flex flex-col items-center p-4 min-h-screen">
+<body class="bg-gray-900 text-white flex flex-col py-10 min-h-screen w-full mx-0">
 
   <!-- ปุ่มกลับหน้า index.html -->
-  <div class="w-full max-w-[900px] mb-4 flex justify-start">
-    <a href="{{ url_for('index') }}"
+  <div class="w-full mb-4 flex justify-start px-4">
+    <a href="{{ url_for('Living') }}"
       class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-white font-semibold transition">
-      ← กลับหน้าแรก
+      ←
     </a>
   </div>
 
-  <h1 class="text-3xl font-bold mb-6 drop-shadow-lg">📹 CCTV Live – เมืองแม่ฮ่องสอน</h1>
 
   <!-- ปุ่มเพิ่มกล้อง + รายชื่อกล้อง (อยู่ขวาสุดเรียงลงมา) -->
   <div id="topButtons">
     <div id="topButtonsRow">
-    <button onclick="setGridSize(2)" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">2x2</button>
-    <button onclick="setGridSize(4)" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">4x4</button>
-    <button onclick="setGridSize(16)" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">16x16</button>
+      <button onclick="setGridSize(2)" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">2x2</button>
+      <button onclick="setGridSize(4)" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">4x4</button>
+      <button onclick="setGridSize(16)" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">16x16</button>
       <button id="toggleAddBtn" title="เพิ่มกล้อง">➕ เพิ่มกล้อง</button>
       <button id="toggleCameraListBtn" title="รายชื่อกล้อง">📋 รายชื่อกล้อง</button>
     </div>
@@ -349,9 +388,10 @@
   </div>
 
   <!-- กริดวิดีโอ (กล้อง) อยู่บน -->
-  <div id="videoGrid">
+  <div id="videoGrid" class="px-4">
     {% if cameras|length == 0 %}
-    <div id="noCameraMsg" class="text-center text-red-400 font-semibold py-8 text-xl">❌ ไม่มีกล้อง CCTV ให้แสดง</div>
+    <div id="noCameraMsg"
+      class="text-center text-red-400 font-semibold py-8 text-xl">❌ ไม่มีกล้อง CCTV ให้แสดง</div>
     {% else %}
     {% for cam in cameras %}
     <div class="video-wrapper" data-camera-id="{{ cam.id }}">
@@ -370,10 +410,17 @@
   </div>
 
   <!-- แผนที่หลัก war room อยู่ล่าง -->
-  <div id="mainMap"></div>
+  <div id="mainMap" class="px-4"></div>
 
   <!-- ปุ่มเลือกกริด -->
-  
+  <div id="gridControls" style="display:none;">
+    <!-- ถ้าต้องการปุ่มกริดลอย -->
+    <!-- ตัวอย่างปุ่ม:
+    <button onclick="setGridSize(2)">2x2</button>
+    <button onclick="setGridSize(4)">4x4</button>
+    -->
+  </div>
+
   <!-- Modal ฟอร์มเพิ่มกล้อง -->
   <div id="addCameraModal" role="dialog" aria-modal="true" aria-labelledby="addCameraTitle">
     <div>
@@ -508,6 +555,9 @@
         miniMarker = null;
       }
       miniMap.setView([19.3, 97.97], 8);
+       setTimeout(() => {
+    miniMap.invalidateSize();
+  }, 100);
     });
 
     cancelAddBtn.addEventListener('click', () => {
@@ -563,19 +613,6 @@
       });
     }
 
-    // เปิด modal วิดีโอ จาก url
-    function openModal(url) {
-      const modal = document.getElementById('videoModal');
-      const modalVideo = document.getElementById('modalVideo');
-      modalVideo.src = url;
-      modal.style.display = 'flex';
-
-      // ซ่อนปุ่ม + แผนที่
-      document.getElementById('topButtons').style.display = 'none';
-      document.getElementById('mainMap').style.display = 'none';
-      document.getElementById('videoGrid').style.filter = 'blur(3px)';
-    }
-
     // init mini map ใน modal เพิ่มกล้อง
     function initMiniMap() {
       miniMap = L.map('miniMap', {
@@ -618,6 +655,7 @@
       setGridSize(currentGridSize);
     });
   </script>
+
 </body>
 
 </html>
