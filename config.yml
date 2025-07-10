@@ -1,5 +1,5 @@
 tunnel: 61314e76-a485-42fd-98e9-f05b82587e87  # ได้จากขั้นตอน create
-credentials-file: C:\Users\nippi\.cloudflared\61314e76-a485-42fd-98e9-f05b82587e87.json
+credentials-file: C:\Users\nippi\.cloudflared\61314e76-a485-42fd-98e9-f05b82587e87.json # ต้องแก้เป็นของเครื่องตัวเอง
 
 ingress:
   - hostname: kwangdataisyourspace.space
