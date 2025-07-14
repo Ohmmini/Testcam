@@ -2,8 +2,13 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <title>Menupage with Emoji Top-Left & Center Text</title>
+  <title>Smart City Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
   <style>
     .responsive-wrapper {
       display: flex;
@@ -18,20 +23,87 @@
       position: relative;
       background-color: rgba(45, 55, 72, 0.3);
       border-radius: 0.5rem;
-      box-sizing: border-box;
       font-size: 1.125rem;
       width: 300px;
       height: 400px;
-      transition: all 0.3s ease;
       backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
       color: white;
       display: flex;
       flex-direction: column;
       padding: 1rem;
       overflow: hidden;
+      
     }
+    /* กึ่งกลางเนื้อหาใน Smart People */
+.smart-people-content {
+  width: 100%;
+  max-width: 260px;           /* ลดจาก 280px */
+  margin: 0 auto;             /* กึ่งกลางแนวนอน */
+  padding: 1rem;
+  box-sizing: border-box;     /* รวม padding ไว้ใน max-width */
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: left;
+  height: 100%;               /* เต็มความสูงของการ์ด */
+  justify-content: center;    /* กึ่งกลางแนวตั้ง */
+  align-items: center;        /* กึ่งกลางแนวนอน */
+}
+
+.smart-people-content h3 {
+  text-align: center;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.smart-people-content > div {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  align-items: center;
+}
+
+.function_card > .smart-people-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;  /* กึ่งกลางแนวตั้ง */
+  align-items: center;      /* กึ่งกลางแนวนอน */
+}
+@keyframes pulseGlowRenewable {
+  0% {
+    box-shadow: 0 0 5px 2px #4caf50;
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 20px 6px #4caf50;
+    opacity: 0.6;
+  }
+  100% {
+    box-shadow: 0 0 5px 2px #4caf50;
+    opacity: 1;
+  }
+}
+
+.renewable-indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background-color: #4caf50;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  animation: pulseGlowRenewable 2s infinite ease-in-out;
+  position: relative;
+  left: -4px; /* เลื่อนจุดไปทางซ้าย 4px */
+}
+
+
+
+
 
     .header {
       display: flex;
@@ -52,6 +124,66 @@
       text-shadow: 0 0 1px rgba(255,255,255,0.4);
     }
 
+    /* ปรับสไตล์สำหรับ weather ให้เรียงแนวตั้ง ไอคอนใหญ่ */
+#weather, #aqi {
+  position: absolute;
+  top: 3.5rem;
+  left: 1rem;
+  right: 1rem;
+  margin-top: 0;
+  color: #b0e0e6;
+  font-weight: 300;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+    #weather-city {
+      font-size: 1.2rem;
+      font-weight: 400;
+    }
+    #weather-icon {
+      font-size: 4.5rem !important; /* ไอคอนใหญ่ */
+      line-height: 1;
+      user-select: none;
+      pointer-events: none;
+    }
+    #weather-temp {
+      font-size: 2.5rem;
+      font-weight: 600;
+      color: #ffce56;
+      line-height: 1.1;
+    }
+    #weather-desc {
+      font-size: 1.1rem;
+      font-weight: 300;
+      margin-bottom: 0.5rem;
+      user-select: none;
+    }
+
+    /* Forecast marquee ปรับขนาดให้ชิดล่างของ weather card */
+    #forecast-marquee {
+      margin-top: auto; /* ดันลงล่างสุด */
+      background: rgba(0,0,0,0.2);
+      padding: 6px 10px;
+      font-size: 0.9rem;
+      border-radius: 0.3rem;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    #forecast-marquee span {
+      display: inline-block;
+      padding-left: 100%;
+      animation: marquee 30s linear infinite;
+      user-select: none;
+    }
+    @keyframes marquee {
+      0%   { transform: translateX(0%); }
+      100% { transform: translateX(-100%); }
+    }
+
     .switch-section {
       margin-top: 1rem;
       color: #b0e0e6;
@@ -66,88 +198,45 @@
       right: 1rem;
     }
 
+    .highlight-value {
+      font-size: 2rem;
+      font-weight: 600;
+      text-align: center;
+      color: #ffce56;
+    }
+
     .hidden {
       display: none !important;
     }
 
-    /* Slide animations */
-    .slide-in-right {
-      animation: slideInRight 0.6s forwards;
-      display: flex !important;
-      position: absolute;
-      top: 3.5rem;
-      left: 1rem;
-      right: 1rem;
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
     }
 
-    .slide-out-left {
-      animation: slideOutLeft 0.6s forwards;
-      display: flex !important;
-      position: absolute;
-      top: 3.5rem;
-      left: 1rem;
-      right: 1rem;
+    @keyframes fadeOutScale {
+      from { opacity: 1; transform: scale(1); }
+      to { opacity: 0; transform: scale(0.9); }
     }
 
-    .slide-in-left {
-      animation: slideInLeft 0.6s forwards;
-      display: flex !important;
-      position: absolute;
-      top: 3.5rem;
-      left: 1rem;
-      right: 1rem;
+    .fade-in-scale {
+      animation: fadeInScale 0.6s forwards;
     }
 
-    .slide-out-right {
-      animation: slideOutRight 0.6s forwards;
-      display: flex !important;
-      position: absolute;
-      top: 3.5rem;
-      left: 1rem;
-      right: 1rem;
+    .fade-out-scale {
+      animation: fadeOutScale 0.6s forwards;
     }
 
-    @keyframes slideInRight {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
+    #economyChart {
+      width: 100%;
+      aspect-ratio: 2 / 1;
+      max-height: 180px;
     }
-
-    @keyframes slideOutLeft {
-      from { transform: translateX(0); opacity: 1; }
-      to { transform: translateX(-100%); opacity: 0; }
-    }
-
-    @keyframes slideInLeft {
-      from { transform: translateX(-100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-
-    @keyframes slideOutRight {
-      from { transform: translateX(0); opacity: 1; }
-      to { transform: translateX(100%); opacity: 0; }
-    }
-
-    /* Weather and AQI text styling */
-    #weather-city, #aqi-city {
-      font-size: 1.5rem;
-      font-weight: 500;
-      opacity: 0.8;
-    }
-
-    #weather-icon, #aqi-icon {
-      font-size: 3.5rem;
-      line-height: 1;
-    }
-
-    #weather-temp, #aqi-value {
-      font-size: 2rem;
-      font-weight: 600;
-    }
-
-    #weather-desc, #aqi-desc {
-      font-size: 1.25rem;
-      font-style: italic;
+    .energy-value {
       text-align: center;
+      margin-top: 2rem;
+      color: #ffce56;
+      font-weight: 600;
     }
 
     @media (max-width: 640px) {
@@ -163,14 +252,18 @@
       .topic_text {
         font-size: 1rem;
       }
-      #weather-icon, #aqi-icon {
-        font-size: 2rem;
-      }
-      #weather-temp, #aqi-value {
+      .highlight-value {
         font-size: 1.25rem;
       }
-      #weather-desc, #aqi-desc {
-        font-size: 0.875rem;
+      /* ลดขนาด weather */
+      #weather-icon {
+        font-size: 3.5rem !important;
+      }
+      #weather-temp {
+        font-size: 2rem;
+      }
+      #weather-desc {
+        font-size: 1rem;
       }
     }
 
@@ -187,230 +280,607 @@
       .topic_text {
         font-size: 0.875rem;
       }
-      #weather-icon, #aqi-icon {
-        font-size: 1.5rem;
-      }
-      #weather-temp, #aqi-value {
+      .highlight-value {
         font-size: 1rem;
       }
-      #weather-desc, #aqi-desc {
-        font-size: 0.75rem;
+      /* ลดขนาด weather */
+      #weather-icon {
+        font-size: 2.5rem !important;
+      }
+      #weather-temp {
+        font-size: 1.5rem;
+      }
+      #weather-desc {
+        font-size: 0.85rem;
       }
     }
+
+    @keyframes pulseGlow {
+      0% {
+        box-shadow: 0 0 5px 2px #ffce56;
+        opacity: 1;
+      }
+      50% {
+        box-shadow: 0 0 20px 6px #ffce56;
+        opacity: 0.6;
+      }
+      100% {
+        box-shadow: 0 0 5px 2px #ffce56;
+        opacity: 1;
+      }
+    }
+
+    .energy-status-indicator {
+      width: 15px;
+      height: 15px;
+      background-color: #ffce56;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+      animation: pulseGlow 2s infinite ease-in-out;
+      vertical-align: middle;
+    }
+ 
+
+  .info-icon {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.2rem;
+    user-select: none;
+    margin-left: 6px;
+  }
+
+.tooltip-box {
+  position: absolute;
+  top: 5rem;           /* เลื่อนลงต่ำกว่าเดิม (จาก 3.5rem เป็น 5rem) */
+  left: 1rem;          /* เว้นซ้ายเท่าเดิม หรือจะลดเพิ่มก็ได้ */
+  right: 1rem;         /* เว้นขวาเท่าเดิม */
+  width: auto;
+  max-width: calc(100% - 2rem);  /* ขยายพื้นที่กว้างขึ้น (ลดเว้นขอบ) */
+   background-color: rgba(0, 0, 0, 0.95);
+  border-radius: 0.5rem;
+  padding: 1.2rem 1.5rem;         /* เพิ่ม padding เพื่อพื้นที่ภายใน */
+  z-index: 20;
+  display: none;
+  color: white;
+  font-size: 0.95rem;
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+  display: none;
+}
+
+
+.tooltip-box.show {
+  display: block !important;
+}
+
+
   </style>
 </head>
 <body class="bg-black text-white min-h-screen">
 
   <div class="responsive-wrapper">
-    <div class="function_card">
-      <div class="header">
+    <!-- Smart Economy -->
+<a href="/peopleShareing" style="text-decoration: none;">
+  <div class="function_card hover:shadow-lg transition" style="position: relative; padding: 1rem;">
+    <div class="header" style="display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
         <span class="emoji_icon">🪙</span>
-        <span class="topic_text">Smart Economy</span>
+        <span class="topic_text font-semibold text-lg">Smart Economy</span>
       </div>
+      <span class="info-icon" id="infoToggleEco" title="ดูคำอธิบาย">ℹ</span>
     </div>
 
-    <div class="function_card" style="position: relative;">
-      <div class="header">
-        <span class="emoji_icon">🌏</span>
-        <span class="topic_text">Smart Environment</span>
-      </div>
-
-      <div id="weather" class="switch-section">
-        <span id="weather-city"></span>
-        <span id="weather-icon"></span>
-        <span id="weather-temp"></span>
-        <span id="weather-desc"></span>
-      </div>
-
-      <div id="aqi" class="switch-section hidden">
-        <span id="aqi-city"></span>
-        <span id="aqi-icon"></span>
-        <span id="aqi-value"></span>
-        <span id="aqi-desc"></span>
-      </div>
+    <!-- Tooltip box -->
+    <div id="infoBoxEco" class="tooltip-box">
+      เป็นเมืองที่มุ่งเน้นเพิ่มประสิทธิภาพและความคล่องตัวในการดำเนินธุรกิจ สร้างให้เกิดความเชื่อมโยงและความร่วมมือทางธุรกิจ และประยุกต์ใช้นวัตกรรมในการพัฒนาเพื่อปรับเปลี่ยนธุรกิจ
     </div>
 
-    <div class="function_card">
-      <div class="header">
-        <span class="emoji_icon">🏛️</span>
-        <span class="topic_text">Smart Governance</span>
+    <!-- เนื้อหาข้อมูล -->
+    <div class="bg-gray-900 bg-opacity-60 rounded-xl mt-4 p-4 text-gray-200 shadow-lg font-sans w-72 max-w-full">
+      <h3 class="text-yellow-400 font-extrabold text-xl mb-4 text-center">ภาพรวมธุรกิจ</h3>
+      <div class="flex justify-between border-b border-gray-700 py-2">
+        <span class="text-lg">🏞️ สถานที่ท่องเที่ยว</span>
+        <span class="font-semibold">{{ num_tourism }}</span>
+      </div>
+      <div class="flex justify-between py-2">
+        <span class="text-lg">🍛 ร้านอาหาร</span>
+        <span class="font-semibold">{{ num_food }}</span>
       </div>
     </div>
-
-<a href="/Living" style="text-decoration: none;">
-  <div class="function_card hover:shadow-lg transition">
-    <div class="header">
-      <span class="emoji_icon">🏠</span>
-      <span class="topic_text">Smart Living</span>
-    </div>
-    <div id="camera-names" class="mt-2 text-sm text-white/70"></div>
   </div>
 </a>
 
-    <div class="function_card">
-      <div class="header">
-        <span class="emoji_icon">🧑🏻‍🤝‍🧑🏼</span>
-        <span class="topic_text">Smart People</span>
+    <!-- Smart Environment -->
+   <a href="/weather" style="text-decoration: none;">
+  <div class="function_card" style="position: relative;">
+    <div class="header" style="display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span class="emoji_icon">🌏</span>
+        <span class="topic_text">Smart Environment</span>
       </div>
+      <span class="info-icon" id="infoToggleEnv" title="ดูคำอธิบาย">ℹ</span>
     </div>
 
-    <div class="function_card">
-      <div class="header">
-        <span class="emoji_icon">💡</span>
-        <span class="topic_text">Smart Energy</span>
-      </div>
+    <!-- Tooltip box -->
+    <div id="infoBoxEnv" class="tooltip-box">
+      เป็นเมืองที่มุ่งเน้นการดูแลรักษาสิ่งแวดล้อมและคุณภาพอากาศ พร้อมสนับสนุนการใช้พลังงานสะอาดและลดมลพิษ
     </div>
 
-    <div class="function_card">
-      <div class="header">
-        <span class="emoji_icon">🚌</span>
-        <span class="topic_text">Smart Mobility</span>
+    <div id="weather">
+      <span id="weather-city"></span>
+      <span id="weather-icon"></span>
+      <span id="weather-temp" class="highlight-value"></span>
+      <span id="weather-desc"></span>
+    </div>
+    <div id="aqi" class="switch-section hidden">
+      <span id="aqi-city"></span>
+      <span id="aqi-icon" style="font-size: 2.5rem;"></span>
+      <span id="aqi-value" class="highlight-value"></span>
+      <span id="aqi-desc"></span>
+    </div>
+    <div id="forecast-marquee" class="forecast-marquee"><span></span></div>
+  </div>
+</a>
+
+    <!-- Other Cards -->
+ <div class="function_card" style="position: relative;">
+  <div class="header" style="display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <span class="emoji_icon">🏛️</span>
+      <span class="topic_text">Smart Governance</span>
+    </div>
+    <span class="info-icon" id="infoToggleGov" title="ดูคำอธิบาย">ℹ</span>
+  </div>
+
+  <!-- Tooltip box -->
+  <div id="infoBoxGov" class="tooltip-box">
+    เป็นเมืองที่มุ่งเน้นพัฒนาระบบบริการเพื่อให้ประชาชนเข้าถึงบริการภาครัฐสะดวก รวดเร็ว เพิ่มช่องทางการมีส่วนร่วมของประชาชน รวมถึงการเปิดให้ประชาชนเข้าถึงข้อมูลทำให้เกิดความโปร่งใส ตรวจสอบได้
+  </div>
+</div>
+
+<a href="/Living" style="text-decoration: none;">
+  <div class="function_card hover:shadow-lg transition" style="position: relative;">
+    <div class="header" style="display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span class="emoji_icon">🏠</span>
+        <span class="topic_text">Smart Living</span>
       </div>
+      <span class="info-icon" id="infoToggleLiving" title="ดูคำอธิบาย">ℹ</span>
+    </div>
+
+
+    <!-- Tooltip box -->
+    <div id="infoBoxLiving" class="tooltip-box">
+       เป็นเมืองที่มุ่งเน้นให้บริการที่อำนวยความสะดวกต่อการดำรงชีวิต เช่น การบริการด้านสุขภาพให้ประชาชนมีสุขภาพและสุขภาวะที่ดี โดยเฉพาะอย่างยิ่งเพื่อเตรียมพร้อมเข้าสู่สังคมสูงอายุ การเพิ่มความปลอดภัยของประชาชนด้วยการเฝ้าระวังภัยจากอาชญากรรม ไปจนถึงการส่งเสริมให้เกิดสิ่งอำนวยความสะดวกสำหรับการดำรงชีวิตที่เหมาะสม
+    </div>
+    <div class="bg-gray-900 bg-opacity-60 rounded-xl mt-4 p-4 text-gray-200 shadow-lg font-sans w-72 max-w-full">
+      <h3 class="text-yellow-400 font-extrabold text-xl mb-4 text-center">จำนวนกล้องวงจรปิด</h3>
+      <div class="flex justify-between py-2">
+    <span class="text-lg">🎥 กล้อง CCTV</span>
+    <span class="font-semibold">{{ num_cameras }}</span>
+  </div>
+  </div>
+  </div>
+</a>
+
+<div class="function_card" style="position: relative;">
+  <div class="header" style="display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <span class="emoji_icon">🧑🏻‍🤝‍🧑🏼</span>
+      <span class="topic_text">Smart People</span>
+    </div>
+    <span class="info-icon" id="infoTogglePeople" title="ดูคำอธิบาย">ℹ</span>
+  </div>
+  <div class="bg-gray-900 bg-opacity-60 rounded-xl w-72 text-gray-200 shadow-lg font-sans smart-people-content">
+    <h3 class="text-yellow-400 font-extrabold text-xl mb-4 text-center">ภาพรวมประชากร</h3>
+    <div class="flex justify-between border-b border-gray-700 py-2 w-full max-w-[280px]">
+      <span class="text-lg">🧑‍💼 ผู้ชาย</span>
+      <span class="font-semibold">3,431 คน</span>
+    </div>
+    <div class="flex justify-between border-b border-gray-700 py-2 w-full max-w-[280px]">
+      <span class="text-lg">👩‍💼 ผู้หญิง</span>
+      <span class="font-semibold">3,537 คน</span>
+    </div>
+    <div class="flex justify-between py-2 w-full max-w-[280px]">
+       <span class="text-sm">📊 ความหนาแน่น</span>
+      <span class="text-sm">1,161.33 คน/ตร.กม.</span>
     </div>
   </div>
 
+  <!-- Tooltip box -->
+  <div id="infoBoxPeople" class="tooltip-box">
+    เป็นเมืองที่มุ่งเน้นพัฒนาพลเมืองให้มีความรู้และสามารถประยุกต์ใช้เทคโนโลยีให้เกิดประโยชน์ทั้งในเชิงเศรษฐกิจและการดำรงชีวิต สร้างสภาพแวดล้อมที่ส่งเสริมความคิดสร้างสรรค์และการเรียนรู้นอกระบบ รวมถึงการส่งเสริมการอยู่ร่วมกันด้วยความหลากหลายทางสังคม
+  </div>
+</div>
+
+
+
+<a href="/Energy" style="text-decoration: none;">
+  <div class="function_card" style="cursor: pointer; position: relative;">
+    <div class="header" style="display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span class="emoji_icon">💡</span>
+        <span class="topic_text">Smart Energy</span>
+      </div>
+      <span class="info-icon" id="infoToggleEnergy" title="ดูคำอธิบาย">ℹ</span>
+    </div>
+    <div class="energy-value" id="energy-value">กำลังโหลด...</div>
+
+    <!-- Tooltip box -->
+    <div id="infoBoxEnergy" class="tooltip-box">
+      เป็นเมืองที่มุ่งเน้นเพิ่มประสิทธิภาพการใช้พลังงานของเมือง หรือใช้พลังงานทางเลือกอันเป็นพลังงานสะอาด (Renewable Energy) เช่น เชื้อเพลงชีวมวล ไฟฟ้าจากพลังงานหมุนเวียน และไฟฟ้าจากพลังงานอื่นๆ เป็นต้น
+    </div>
+  </div>
+</a>
+<div class="function_card" style="position: relative;">
+  <div class="header" style="display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <span class="emoji_icon">🚌</span>
+      <span class="topic_text">Smart Mobility</span>
+    </div>
+    <span class="info-icon" id="infoToggleMobility" title="ดูคำอธิบาย">ℹ</span>
+  </div>
+
+  <!-- Tooltip box -->
+  <div id="infoBoxMobility" class="tooltip-box">
+     เป็นเมืองที่มุ่งเน้นเพิ่มความสะดวก ประสิทธิภาพ และความปลอดภัยในการเดินทางและขนส่ง และเป็นมิตรกับสิ่งแวดล้อม
+  </div>
+</div>
+
+
+
+  <!-- JavaScript: Weather & AQI -->
+  <script>
+    // ตารางแปลง weathercode เป็น Emoji + คำอธิบาย
+    function weatherCodeToEmojiDesc(code) {
+      if (code === 0) return {emoji: "☀️", desc: "แจ่มใส"};
+      if ([1,2,3].includes(code)) return {emoji: "⛅", desc: "เมฆบางส่วนถึงมาก"};
+      if ([45,48].includes(code)) return {emoji: "🌫️", desc: "หมอก"};
+      if ([51,53,55].includes(code)) return {emoji: "🌦️", desc: "ฝนตกปรอยๆ"};
+      if ([56,57].includes(code)) return {emoji: "🌧️", desc: "ฝนตกปรอยแข็ง"};
+      if ([61,63,65].includes(code)) return {emoji: "🌧️", desc: "ฝนตก"};
+      if ([66,67].includes(code)) return {emoji: "🌧️❄️", desc: "ฝนตกแข็ง"};
+      if ([71,73,75].includes(code)) return {emoji: "❄️", desc: "หิมะตก"};
+      if (code === 77) return {emoji: "❄️", desc: "เกล็ดหิมะ"};
+      if ([80,81,82].includes(code)) return {emoji: "🌧️", desc: "ฝนตกเป็นช่วงๆ"};
+      if ([85,86].includes(code)) return {emoji: "❄️", desc: "หิมะตกเป็นช่วงๆ"};
+      if (code === 95) return {emoji: "⛈️", desc: "พายุฝนฟ้าคะนอง"};
+      if ([96,99].includes(code)) return {emoji: "⛈️❄️", desc: "พายุฝนฟ้าคะนองกับลูกเห็บ"};
+      return {emoji: "🌡️", desc: "ไม่ทราบ"};
+    }
+
+    // ดึงข้อมูลสภาพอากาศปัจจุบันจาก Open-Meteo
+    async function fetchCurrentWeather() {
+      try {
+        const lat = 19.3010;
+        const lon = 97.9654;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=Asia/Bangkok`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        const weatherCode = data.current_weather.weathercode;
+        const temp = data.current_weather.temperature;
+
+        const weatherInfo = weatherCodeToEmojiDesc(weatherCode);
+
+        document.getElementById('weather-city').innerText = "แม่ฮ่องสอน";
+        document.getElementById('weather-icon').innerText = weatherInfo.emoji;
+        document.getElementById('weather-temp').innerText = temp.toFixed(1) + "°C";
+        document.getElementById('weather-desc').innerText = weatherInfo.desc;
+      } catch (e) {
+        console.error("Error fetching current weather:", e);
+      }
+    }
+
+    // ดึงข้อมูล AQI จาก OpenWeatherMap
+    async function fetchAQI() {
+      try {
+        const lat = 19.3010;
+        const lon = 97.9654;
+        const apiKey = "9ba28f605e85242189e0c018fb078855";
+        const url = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${apiKey}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("HTTP error " + res.status);
+        const data = await res.json();
+        const aqi = data.list?.[0]?.main?.aqi || 0;
+
+        const aqiEmoji = ["🟢", "🟡", "🟠", "🔴", "⚫"][aqi - 1] || "❓";
+        const aqiDesc = ["ดีมาก", "ดี", "ปานกลาง", "ไม่ดี", "อันตราย"][aqi - 1] || "ไม่ทราบค่า";
+
+        document.getElementById('aqi-city').innerText = "แม่ฮ่องสอน";
+        document.getElementById('aqi-icon').innerText = aqiEmoji;
+        document.getElementById('aqi-value').innerText = "AQI: " + (aqi > 0 ? aqi : "ไม่ทราบ");
+        document.getElementById('aqi-desc').innerText = aqiDesc;
+      } catch (e) {
+        console.error("AQI fetch error:", e);
+      }
+    }
+
+    // สลับแสดงระหว่าง Weather กับ AQI ทุก 10 วินาที
+    function toggleSections() {
+      const weather = document.getElementById("weather");
+      const aqi = document.getElementById("aqi");
+      if (weather.classList.contains("hidden")) {
+        aqi.classList.add("fade-out-scale");
+        weather.classList.remove("hidden");
+        weather.classList.add("fade-in-scale");
+        setTimeout(() => {
+          aqi.classList.add("hidden");
+          aqi.classList.remove("fade-out-scale");
+        }, 600);
+      } else {
+        weather.classList.add("fade-out-scale");
+        aqi.classList.remove("hidden");
+        aqi.classList.add("fade-in-scale");
+        setTimeout(() => {
+          weather.classList.add("hidden");
+          weather.classList.remove("fade-out-scale");
+        }, 600);
+      }
+    }
+
+    // โหลดข้อมูลตอนเริ่ม และตั้ง interval อัพเดต
+    fetchCurrentWeather();
+    fetchAQI();
+    setInterval(fetchCurrentWeather, 600000); // ทุก 10 นาที
+    setInterval(fetchAQI, 600000); // ทุก 10 นาที
+    setInterval(toggleSections, 10000); // ทุก 10 วินาที
+
+  </script>
+
+  <!-- JavaScript: Forecast จาก Open-Meteo -->
+  <script>
+    async function fetchForecast() {
+      try {
+        const lat = 19.301;
+        const lon = 97.9654;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=Asia/Bangkok`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        const days = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+
+        function weatherCodeToDesc(code) {
+          switch(code) {
+            case 0: return {emoji: "☀️", desc: "แจ่มใส"};
+            case 1:
+            case 2:
+            case 3: return {emoji: "⛅", desc: "เมฆบางส่วนถึงมาก"};
+            case 45:
+            case 48: return {emoji: "🌫️", desc: "หมอก"};
+            case 51:
+            case 53:
+            case 55: return {emoji: "🌦️", desc: "ฝนตกปรอยๆ"};
+            case 56:
+            case 57: return {emoji: "🌧️", desc: "ฝนตกปรอยแข็ง"};
+            case 61:
+            case 63:
+            case 65: return {emoji: "🌧️", desc: "ฝนตก"};
+            case 66:
+            case 67: return {emoji: "🌧️❄️", desc: "ฝนตกแข็ง"};
+            case 71:
+            case 73:
+            case 75: return {emoji: "❄️", desc: "หิมะตก"};
+            case 77: return {emoji: "❄️", desc: "เกล็ดหิมะ"};
+            case 80:
+            case 81:
+            case 82: return {emoji: "🌧️", desc: "ฝนตกเป็นช่วงๆ"};
+            case 85:
+            case 86: return {emoji: "❄️", desc: "หิมะตกเป็นช่วงๆ"};
+            case 95: return {emoji: "⛈️", desc: "พายุฝนฟ้าคะนอง"};
+            case 96:
+            case 99: return {emoji: "⛈️❄️", desc: "พายุฝนฟ้าคะนองกับลูกเห็บ"};
+            default: return {emoji: "🌡️", desc: "ไม่ทราบ"};
+          }
+        }
+
+        // สร้างข้อความพยากรณ์ 7 วันถัดไป (ตัดวันที่ 0 ออก เพราะเป็นวันนี้)
+        const forecastText = data.daily.time.slice(1, 8).map((dateStr, idx) => {
+          const date = new Date(dateStr);
+          const dayLabel = days[date.getDay()];
+          const minTemp = data.daily.temperature_2m_min[idx+1].toFixed(0);
+          const maxTemp = data.daily.temperature_2m_max[idx+1].toFixed(0);
+          const weatherInfo = weatherCodeToDesc(data.daily.weathercode[idx+1]);
+          return `${dayLabel} ${weatherInfo.emoji} (${weatherInfo.desc}) ${minTemp}°C - ${maxTemp}°C`;
+        }).join(' | ');
+
+        // ใส่ข้อความลงใน <span> เพื่อให้ marquee วิ่ง
+        document.querySelector("#forecast-marquee span").innerText = forecastText;
+
+      } catch (err) {
+        console.error("Forecast fetch error:", err);
+        document.querySelector("#forecast-marquee span").innerText = "ไม่สามารถโหลดพยากรณ์อากาศได้";
+      }
+    }
+
+    fetchForecast();
+    setInterval(fetchForecast, 3600000); // อัพเดตทุก 1 ชม.
+  </script>
+
+  <!-- JavaScript: Chart in Smart Economy -->
+  <script>
+    const ctx = document.getElementById('economyChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย."],
+        datasets: [{
+          label: 'GDP (ล้านบาท)',
+          data: [250, 270, 260, 290, 310, 305],
+          backgroundColor: 'rgba(0, 255, 204, 0.15)',
+          borderColor: '#00ffcc',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#00ffcc',
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        layout: { padding: { top: 20 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: true },
+          datalabels: {
+            color: '#00ffcc',
+            font: { weight: 'bold', size: 12 },
+            anchor: 'center',
+            align: 'bottom',
+            formatter: (value) => value
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              color: '#00ffcc',
+              font: { size: 12 }
+            }
+          },
+          y: {
+            display: false,
+            grid: { display: false },
+            ticks: { display: false }
+          }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+  </script>
+
+  <!-- JavaScript: Energy -->
+  <script>
+    async function updateEnergy() {
+      try {
+        const res = await fetch("https://asia-northeast1-momay-4a073.cloudfunctions.net/api/sensorResident");
+        const json = await res.json();
+
+        const power = (json.power !== undefined && json.power !== null) ? json.power.toFixed(2) : "N/A";
+
+        document.getElementById("energy-value").innerHTML = `
+          <div>
+            <span class="energy-status-indicator"></span>Power Consumption
+          </div>
+          <div style="font-size: 2rem; font-weight: 700; color: #ffce56;">
+            ${power} kW
+          </div>
+        `;
+      } catch (e) {
+        console.error("Error fetching power:", e);
+        document.getElementById("energy-value").innerText = "ไม่สามารถโหลดข้อมูลได้";
+      }
+    }
+
+    updateEnergy();
+    setInterval(updateEnergy, 10000);
+  </script>
+  
 <script>
-  const apiKey = "9ba28f605e85242189e0c018fb078855";
-  const city = "Mae Hong Son,TH";
-  const lat = 19.3010;  // พิกัดแม่ฮ่องสอน
-  const lon = 97.9654;
+  // สร้างแผนที่เปิดให้ซูม/ลากได้
+  const mobilityMap = L.map('mobility-map').setView([19.3010, 97.9654], 13);
 
-  function getWeatherEmoji(description) {
-    const desc = description.toLowerCase();
-    if (desc.includes("แจ่มใส") || desc.includes("ฟ้าโปร่ง")) return "☀️";
-    if (desc.includes("เมฆบางส่วน")) return "🌤️";
-    if (desc.includes("เมฆกระจาย")) return "⛅";
-    if (desc.includes("มีเมฆมาก") || desc.includes("เมฆเป็นส่วนมาก")) return "🌥️";
-    if (desc.includes("เมฆเต็มท้องฟ้า") || desc.includes("เมฆหนาแน่น")) return "☁️";
-    if (desc.includes("ฝนเล็กน้อย") || desc.includes("ฝนเบา")) return "🌦️";
-    if (desc.includes("ฝน") || desc.includes("ฝนตก")) return "🌧️";
-    if (desc.includes("ฝนฟ้าคะนอง") || desc.includes("ฟ้าร้อง")) return "⛈️";
-    if (desc.includes("หิมะ")) return "❄️";
-    if (desc.includes("หมอก") || desc.includes("หมอกควัน") || desc.includes("ควัน")) return "🌫️";
-    if (desc.includes("พายุ") || desc.includes("ลมแรง")) return "🌪️";
-    return "🌡️";
-  }
+  // แผนที่พื้นหลัง OpenStreetMap
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '',
+    maxZoom: 18
+  }).addTo(mobilityMap);
 
-  function getAQIEmoji(aqi) {
-    return ["🟢", "🟡", "🟠", "🔴", "⚫"][aqi - 1] || "❓";
-  }
+  // ไอคอนเป็น emoji 🚌 แทน
+  const emojiIcon = L.divIcon({
+    className: '',
+    html: '🚌',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
+  });
 
-  function getAQIDesc(aqi) {
-    return ["ดีมาก", "ดี", "ปานกลาง", "ไม่ดี", "อันตราย"][aqi - 1] || "ไม่ทราบค่า";
-  }
-
-  async function fetchWeather() {
-    try {
-      const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric&lang=th`;
-      const response = await fetch(url);
-      const data = await response.json();
-
-      const temp = data.main.temp.toFixed(1) + "°C";
-      const desc = data.weather[0].description;
-      const emoji = getWeatherEmoji(desc);
-      const cityName = data.name;
-
-      document.getElementById('weather-city').innerText = cityName;
-      document.getElementById('weather-icon').innerText = emoji;
-      document.getElementById('weather-temp').innerText = temp;
-      document.getElementById('weather-desc').innerText = desc;
-
-    } catch (error) {
-      document.getElementById('weather-city').innerText = "";
-      document.getElementById('weather-icon').innerText = "❌";
-      document.getElementById('weather-temp').innerText = "ไม่สามารถโหลดสภาพอากาศ";
-      document.getElementById('weather-desc').innerText = "";
-      console.error(error);
-    }
-  }
-
-  async function fetchAQI() {
-    try {
-      const url = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${apiKey}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      const aqi = data.list[0].main.aqi;
-
-      document.getElementById('aqi-city').innerText = "แม่ฮ่องสอน";
-      document.getElementById('aqi-icon').innerText = getAQIEmoji(aqi);
-      document.getElementById('aqi-value').innerText = "AQI: " + aqi;
-      document.getElementById('aqi-desc').innerText = getAQIDesc(aqi);
-
-    } catch (error) {
-      console.error("AQI fetch error", error);
-      document.getElementById('aqi-city').innerText = "ไม่สามารถโหลด AQI";
-      document.getElementById('aqi-icon').innerText = "❌";
-      document.getElementById('aqi-value').innerText = "";
-      document.getElementById('aqi-desc').innerText = "";
-    }
-  }
-
-  function toggleSections() {
-    const weather = document.getElementById("weather");
-    const aqi = document.getElementById("aqi");
-
-    if (weather.classList.contains("hidden")) {
-      // weather ซ่อนอยู่ => aqi slide out left, weather slide in right
-      aqi.classList.remove("slide-in-left");
-      aqi.classList.add("slide-out-left");
-      weather.classList.remove("hidden");
-      weather.classList.remove("slide-out-right");
-      weather.classList.add("slide-in-right");
-
-      setTimeout(() => {
-        aqi.classList.add("hidden");
-        aqi.classList.remove("slide-out-left");
-      }, 600);
-    } else {
-      // weather แสดงอยู่ => weather slide out right, aqi slide in left
-      weather.classList.remove("slide-in-right");
-      weather.classList.add("slide-out-right");
-      aqi.classList.remove("hidden");
-      aqi.classList.remove("slide-out-left");
-      aqi.classList.add("slide-in-left");
-
-      setTimeout(() => {
-        weather.classList.add("hidden");
-        weather.classList.remove("slide-out-right");
-      }, 600);
-    }
-  }
-
-  // เริ่มต้นให้โชว์ weather ก่อน
-  document.getElementById("weather").classList.remove("hidden");
-  document.getElementById("weather").classList.add("slide-in-right");
-  document.getElementById("aqi").classList.add("hidden");
-
-  // โหลดข้อมูล
-  fetchWeather();
-  fetchAQI();
-
-  // อัพเดตข้อมูลทุก 10 นาที
-  setInterval(fetchWeather, 10 * 60 * 1000);
-  setInterval(fetchAQI, 10 * 60 * 1000);
-
-  // สลับแสดง weather กับ AQI ทุก 10 วินาที
-  setInterval(toggleSections, 10000);
-</script>
-<script>
-fetch("cameras.json")
-  .then(res => res.json())
-  .then(data => {
-    const container = document.getElementById("camera-names");
-    if (container && data.length > 0) {
-      const names = data.map(cam => `📷 ${cam.name || "Unnamed"}`).join("<br>");
-      container.innerHTML = names;
-    } else {
-      container.innerHTML = "ไม่พบกล้อง";
-    }
-  })
-  .catch(err => {
-    console.error("Error loading cameras.json:", err);
-    const container = document.getElementById("camera-names");
-    if (container) container.innerHTML = "เกิดข้อผิดพลาดในการโหลดกล้อง";
+  // ตำแหน่งป้ายรถเมล์ (จำลอง)
+  const busStops = [
+    { name: "ป้ายรถเมล์ บขส.แม่ฮ่องสอน", lat: 19.303, lon: 97.967 },
+    { name: "ป้ายรถเมล์ หน้าเทศบาลเมือง", lat: 19.298, lon: 97.961 },
+    { name: "ป้ายรถเมล์ หน้าโรงเรียน", lat: 19.310, lon: 97.970 }
+  ];
+19.35673,98.4382798
+  // วาง marker ป้ายรถเมล์
+  busStops.forEach(stop => {
+    L.marker([stop.lat, stop.lon], { icon: emojiIcon })
+      .addTo(mobilityMap)
+      .bindPopup(`<b>${stop.name}</b>`);
   });
 </script>
 
+    
 
+<script>
+const infoToggleEco = document.getElementById('infoToggleEco');
+const infoBoxEco = document.getElementById('infoBoxEco');
+
+const infoToggleEnv = document.getElementById('infoToggleEnv');
+const infoBoxEnv = document.getElementById('infoBoxEnv');
+
+const infoToggleGov = document.getElementById('infoToggleGov');
+const infoBoxGov = document.getElementById('infoBoxGov');
+
+const infoToggleLiving = document.getElementById('infoToggleLiving');
+const infoBoxLiving = document.getElementById('infoBoxLiving');
+
+const infoTogglePeople = document.getElementById('infoTogglePeople');
+const infoBoxPeople = document.getElementById('infoBoxPeople');
+
+const infoToggleEnergy = document.getElementById('infoToggleEnergy');
+const infoBoxEnergy = document.getElementById('infoBoxEnergy');
+
+const infoToggleMobility = document.getElementById('infoToggleMobility');
+const infoBoxMobility = document.getElementById('infoBoxMobility');
+
+infoToggleEco.addEventListener('click', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  infoBoxEco.classList.toggle('show');
+});
+
+infoToggleEnv.addEventListener('click', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  infoBoxEnv.classList.toggle('show');
+});
+
+infoToggleGov.addEventListener('click', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  infoBoxGov.classList.toggle('show');
+});
+
+infoToggleLiving.addEventListener('click', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  infoBoxLiving.classList.toggle('show');
+  });
+
+
+infoTogglePeople.addEventListener('click', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  infoBoxPeople.classList.toggle('show');
+});
+
+infoToggleEnergy.addEventListener('click', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  infoBoxEnergy.classList.toggle('show');
+});
+
+infoToggleMobility.addEventListener('click', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  infoBoxMobility.classList.toggle('show');
+});
+
+</script>
 </body>
 </html>

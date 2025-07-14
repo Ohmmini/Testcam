@@ -3,36 +3,120 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Collaborative sensing</title>
+  <title>Collaborative sensing - Camera Status</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
   <style>
-   
+    /* CSS ตามที่ให้มา (เหมือนเดิม) */
+    .cards-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 2rem;
+      padding-left: 5rem;
+      justify-content: flex-start;
+      background-color: #1f2937;
+      min-height: 100vh;
+    }
+    /* ... (ตัด CSS ออกเพื่อความกระชับ) ... */
+    .card-menu {
+      position: relative;
+      width: 300px;
+      height: 400px;
+      background-color: rgba(45, 55, 72, 0.3);
+      border-radius: 0.5rem;
+      backdrop-filter: blur(10px);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      overflow: hidden;
+      transition: box-shadow 0.3s ease, background-image 0.3s ease;
+      user-select: none;
+      text-align: left;
+      font-size: 1rem;
+      text-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
+    }
+    .card-menu:hover {
+      box-shadow: 0 0 15px 4px rgba(255, 255, 255, 0.3);
+    }
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    .camera-list {
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+    .camera-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+    }
+    .online {
+      background-color: limegreen;
+    }
+    .offline {
+      background-color: gray;
+    }
+    .back-button {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      cursor: pointer;
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 600;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      z-index: 9999;
+    }
   </style>
 </head>
 
-<body class="bg-gray-900 min-h-screen relative overflow-x-hidden">
+<body class="bg-gray-900 text-white">
 
-  <!-- หัวเว็บ -->
-  <div class="header-top-left animate-fade-in-up delay-500">
+  <!-- ปุ่มย้อนกลับ -->
+  <div class="back-button">
+    <a href="{{ url_for('opening') }}" style="font-size: 2rem; text-decoration: none; color: inherit;">
+      &lt;
+    </a>
   </div>
 
-
-  <!-- เมนูหลัก -->
-  <div class="main-menu animate-fade-in-up delay-100">
-    <!-- CCTV Card -->
-    <div onclick="window.location.href='/camera'" class="card-menu">
-      <div class="absolute inset-0 bg-blue-700 flex flex-col items-center justify-center text-white text-center">
-        <div class="text-5xl mb-4">📹</div>
-        <div class="text-xl tracking-wider">CCTV</div>
+  <div class="cards-wrapper">
+    <div class="card-menu" onclick="window.location.href='/camera'">
+      <div class="card-title">CCTV</div>
+       <div class="card-title">📹</div>
+      <div class="camera-list">
+        {% for cam in cameras %}
+        <div class="camera-item">
+          <div class="flex items-center">
+            <div class="status-dot {{ 'online' if cam.status == 'ออนไลน์' else 'offline' }}"></div>
+            <span>{{ cam.name }}</span>
+          </div>
+          <span style="color: {{ 'limegreen' if cam.status == 'ออนไลน์' else 'gray' }};">
+            {{ cam.status }}
+          </span>
+        </div>
+        {% else %}
+        <p class="text-center text-gray-400">ไม่มีข้อมูลกล้อง</p>
+        {% endfor %}
       </div>
-      <img src="{{ url_for('static', filename='camera_card.jpg') }}" alt="CCTV" />
     </div>
-
-  
-
-
+  </div>
 
 </body>
 

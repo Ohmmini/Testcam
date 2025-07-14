@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Collaborative sensing - Card Style</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    .cards-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 2rem;
+      padding-left: 5rem; /* เว้นที่ว่างด้านซ้ายให้ปุ่มย้อนกลับ */
+      justify-content: flex-start; /* เริ่มชิดซ้าย */
+      background-color: #1f2937; /* เทาเข้ม */
+      min-height: 100vh;
+    }
+
+    .card-menu {
+      position: relative;
+      width: 300px;
+      height: 400px;
+      background-color: rgba(45, 55, 72, 0.3);
+      border-radius: 0.5rem;
+      backdrop-filter: blur(10px);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center; /* กึ่งกลางแนวตั้ง */
+      align-items: center;
+      padding: 1rem;
+      overflow: hidden;
+      transition: box-shadow 0.3s ease, background-image 0.3s ease;
+      user-select: none;
+      text-align: center;
+      font-size: 5rem;
+      text-shadow: 0 0 4px rgba(0,0,0,0.7);
+    }
+
+    .emoji_icon {
+      flex-grow: 1; /* ไอคอนกินพื้นที่แนวตั้งเพื่อกึ่งกลาง */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .card-label {
+      font-size: 1.25rem;
+      margin-top: auto; /* ดันข้อความลงล่างสุด */
+      user-select: none;
+      pointer-events: none;
+      text-shadow: 0 0 6px rgba(0,0,0,0.7);
+    }
+
+    .card-menu:hover {
+      box-shadow: 0 0 15px 4px rgba(255 255 255 / 0.3);
+      background-image: var(--card-img-url);
+      background-size: cover;
+      background-position: center;
+      color: transparent; /* ซ่อนข้อความและไอคอน */
+      text-shadow: none;
+    }
+
+    /* ปุ่มย้อนกลับ */
+    .back-button {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      cursor: pointer;
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 600;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      z-index: 9999;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .card-menu {
+        width: 200px;
+        height: 280px;
+        font-size: 3.5rem;
+      }
+      .card-label {
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .card-menu {
+        width: 140px;
+        height: 220px;
+        font-size: 2.5rem;
+      }
+      .card-label {
+        font-size: 0.875rem;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-900 text-white">
+
+  <!-- ปุ่มย้อนกลับ -->
+ <div class="back-button" style="cursor: pointer;">
+  <a href="{{ url_for('opening') }}" style="font-size: 2rem; text-decoration: none; color: inherit;">
+    &lt;
+  </a>
+</div>
+
+  <div class="cards-wrapper">
+  <div class="card-menu" 
+       style="--card-img-url: url('{{ url_for('static', filename='solar_card.jpg') }}')" 
+       onclick="window.location.href='https://momayresident.web.app/'">
+    <span class="emoji_icon">⚡</span>
+    <span class="card-label">renewable energy</span>
+  </div>
+</div>
+
+</body>
+
+</html>

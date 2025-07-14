@@ -4,40 +4,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CCTV Live | เมืองแม่ฮ่องสอน</title>
+  <title>War Room CCTV Dashboard</title>
 
   <!-- Tailwind CSS จาก CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Leaflet CSS/JS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    
     /* แผนที่หลัก war room */
     #mainMap {
-  width: 100%;
-  height: 60vh; /* เพิ่มจาก 40vh เป็น 60vh */
-  max-height: 600px; /* หรือถ้าต้องการกำหนดสูงสุด */
-  border-radius: 0.5rem;
-  border: 1px solid #ccc;
-  margin-top: 1rem;
-  transition: opacity 0.3s ease;
-}
-
-    /* ปุ่มเลือกกริด */
-    #gridControls {
-      position: fixed;
-      top: 6rem;
-      left: 1rem;
-      display: flex;
-      gap: 0.5rem;
-      z-index: 999;
-      padding: 0.5rem 1rem;
-      border-radius: 1rem;
-      font-size: 1.25rem;
-      cursor: pointer;
-      background: rgba(31, 41, 55, 0.9); /* Tailwind gray-800 semi-transparent */
+      position: relative;
+      width: 100%;
+      height: 60vh;
+      max-height: 600px;
+      min-height: 300px; /* เพิ่ม */
+      border-radius: 0.5rem;
+      border: 1px solid #ccc;
+      margin-top: 1rem;
+      transition: opacity 0.3s ease;
+      background: #e5e5e5;
     }
 
     /* warroom video grid */
@@ -117,7 +111,7 @@
       position: absolute;
       top: 4px;
       right: 4px;
-      background: rgba(220, 38, 38, 0.8); /* red-600 */
+      background: rgba(220, 38, 38, 0.8);
       color: white;
       border: none;
       border-radius: 50%;
@@ -132,7 +126,7 @@
     }
 
     .delete-btn:hover {
-      background: rgba(220, 38, 38, 1); /* red-700 */
+      background: rgba(220, 38, 38, 1);
     }
 
     /* modal เพิ่มกล้อง */
@@ -194,7 +188,7 @@
       position: absolute;
       top: 0.5rem;
       right: 0.5rem;
-      background: #dc2626; /* Tailwind red-600 */
+      background: #dc2626;
       color: white;
       border: none;
       border-radius: 0.5rem;
@@ -206,197 +200,120 @@
     }
 
     #videoModal button.close-btn:hover {
-      background: #b91c1c; /* Tailwind red-700 */
+      background: #b91c1c;
     }
 
-    /* ปุ่มเพิ่มกล้อง และ รายชื่อกล้อง container อยู่ขวาสุด เรียงลง */
-    #topButtons {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-      padding: 0 1rem;
+    body {
+      padding-inline: 1rem;
     }
 
-    /* ปุ่ม container แนวนอน (แถวเดียว) */
-    #topButtonsRow {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    /* ปุ่มเพิ่มกล้อง */
-    #toggleAddBtn {
-      background-color: #16a34a; /* Tailwind green-600 */
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 1rem;
-      font-size: 1.1rem;
-      cursor: pointer;
-      box-shadow: 0 4px 8px rgba(22, 163, 74, 0.7);
-      transition: background-color 0.2s ease;
-      border: none;
-      white-space: nowrap;
-    }
-
-    #toggleAddBtn:hover {
-      background-color: #15803d; /* Tailwind green-700 */
-    }
-
-    /* ปุ่มรายชื่อกล้อง */
-    #toggleCameraListBtn {
-      background-color: #2563eb; /* Tailwind blue-600 */
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 1rem;
-      font-size: 1.1rem;
-      cursor: pointer;
-      box-shadow: 0 4px 8px rgba(37, 99, 235, 0.7);
-      transition: background-color 0.2s ease;
-      border: none;
-      white-space: nowrap;
-      position: relative;
-      z-index: 50;
-    }
-
-    #toggleCameraListBtn:hover {
-      background-color: #1e40af; /* Tailwind blue-800 */
-    }
-
-    /* รายชื่อกล้องแบบ dropdown เรียงลงมา */
-    #cameraListDropdown {
-      position: relative;
-      width: 320px;
-      max-height: 320px;
-      background-color: #1f2937; /* Tailwind gray-800 */
-      border-radius: 0.5rem;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6);
-      padding: 1rem;
-      overflow-y: auto;
-      color: white;
-      display: none;
-      margin-top: 0.5rem;
-      user-select: none;
-      z-index: 40;
-    }
-
-    #cameraListDropdown h3 {
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-    }
-
-    #cameraListDropdown ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    #cameraListDropdown li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: #374151; /* Tailwind gray-700 */
-      padding: 0.4rem 0.75rem;
-      border-radius: 0.4rem;
-      margin-bottom: 0.4rem;
-      cursor: default;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    #cameraListDropdown li button {
-      background-color: #2563eb; /* Tailwind blue-600 */
-      border: none;
-      border-radius: 0.4rem;
-      padding: 0.25rem 0.6rem;
-      color: white;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-
-    #cameraListDropdown li button:hover {
-      background-color: #1e40af; /* Tailwind blue-800 */
-    }
-
-    #cameraListDropdown p.no-cameras {
-      color: #f87171; /* Tailwind red-400 */
-      font-weight: 600;
-      text-align: center;
-      margin-top: 1rem;
-    }
+    @media (min-width: 768px) {
       body {
-    padding-inline: 1rem; /* ซ้าย-ขวา 16px */
-  }
-
-  @media (min-width: 768px) {
-    body {
-      padding-inline: 2rem; /* ซ้าย-ขวา 32px */
+        padding-inline: 2rem;
+      }
     }
-  }
 
-  @media (min-width: 1280px) {
-    body {
-      padding-inline: 4rem; /* ซ้าย-ขวา 64px */
+    @media (min-width: 1280px) {
+      body {
+        padding-inline: 4rem;
+      }
     }
-  }
   </style>
 </head>
 
 <body class="bg-gray-900 text-white flex flex-col py-10 min-h-screen w-full mx-0">
+  <!-- Spinner แสดงโหลดแผนที่ -->
+  <div id="mapSpinner"
+       style="position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
+              background-color: rgba(0, 0, 0, 0.6); color: white; padding: 0.75rem 2rem;
+              border-radius: 1rem; z-index: 9999; display: flex; align-items: center; gap: 0.5rem;">
+    <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+         viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10"
+              stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8v8z"></path>
+    </svg>
+    <span>กำลังโหลดแผนที่...</span>
+  </div>
 
   <!-- ปุ่มกลับหน้า index.html -->
   <div class="w-full mb-4 flex justify-start px-4">
     <a href="{{ url_for('Living') }}"
-      class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-white font-semibold transition">
+       class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-white font-semibold transition">
       ←
     </a>
   </div>
 
+  <!-- แผนที่หลัก war room อยู่บนสุด -->
+  <div id="mainMap" class="px-4"></div>
 
-  <!-- ปุ่มเพิ่มกล้อง + รายชื่อกล้อง (อยู่ขวาสุดเรียงลงมา) -->
-  <div id="topButtons">
-    <div id="topButtonsRow">
-      <button onclick="setGridSize(2)" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">2x2</button>
-      <button onclick="setGridSize(4)" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">4x4</button>
-      <button onclick="setGridSize(16)" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">16x16</button>
-      <button id="toggleAddBtn" title="เพิ่มกล้อง">➕ เพิ่มกล้อง</button>
-      <button id="toggleCameraListBtn" title="รายชื่อกล้อง">📋 รายชื่อกล้อง</button>
-    </div>
+  <!-- ปุ่มฟันเฟือง (Settings toggle) มุมบนขวาแบบ fixed -->
+  <div style="position: fixed; top: 1rem; right: 1rem; z-index: 1200;">
+    <button id="settingsToggleBtn" aria-label="เปิด/ปิดเมนูการตั้งค่า"
+      class="text-white bg-gray-700 hover:bg-gray-600 p-2 rounded-full text-2xl cursor-pointer select-none"
+      title="ตั้งค่า">
+      ⚙️
+    </button>
+    <!-- เมนูตั้งค่า (ซ่อนโดย default) -->
+    <div id="settingsMenu"
+      style="display:none; background: rgba(31,41,55,0.95); border-radius: 0.5rem; margin-top: 0.5rem; min-width: 240px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); padding: 1rem; color: white;">
 
-    <!-- รายชื่อกล้องแบบ dropdown -->
-    <div id="cameraListDropdown" role="list" aria-label="รายชื่อกล้องทั้งหมด">
-      <h3>📋 รายชื่อกล้องทั้งหมด</h3>
-      {% if cameras %}
-      <ul>
-        {% for cam in cameras %}
-        <li>
-          <span title="{{ cam.name }}">{{ cam.name }}</span>
-          <button onclick="openModal('{{ url_for('video', camera_id=cam.id) }}')">▶️ ดู</button>
-        </li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      <p class="no-cameras">❌ ไม่มีกล้องที่เพิ่มไว้</p>
-      {% endif %}
+      <!-- ปุ่มกริด -->
+      <div class="mb-3 flex justify-between gap-2">
+        <button onclick="setGridSize(2)" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded w-full">2x2</button>
+        <button onclick="setGridSize(4)" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded w-full">4x4</button>
+        <button onclick="setGridSize(16)" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded w-full">16x16</button>
+      </div>
+
+      <!-- ปุ่มเพิ่มกล้อง -->
+      <button id="toggleAddBtn" title="เพิ่มกล้อง"
+        class="w-full mb-3 bg-green-600 hover:bg-green-700 px-3 py-2 rounded font-semibold transition">
+        ➕ เพิ่มกล้อง
+      </button>
+
+      <!-- ปุ่มรายชื่อกล้อง -->
+      <button id="toggleCameraListBtn" title="รายชื่อกล้อง"
+        class="w-full mb-3 bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded font-semibold transition">
+        📋 รายชื่อกล้อง
+      </button>
+
+      <!-- รายชื่อกล้องแบบ dropdown -->
+      <div id="cameraListDropdown" role="list" aria-label="รายชื่อกล้องทั้งหมด"
+        style="display:none; max-height: 320px; overflow-y: auto; background-color: #1f2937; border-radius: 0.5rem; padding: 1rem; color: white;">
+        <h3>📋 รายชื่อกล้องทั้งหมด</h3>
+        {% if cameras %}
+        <ul style="list-style:none; padding:0; margin:0;">
+          {% for cam in cameras %}
+          <li
+            style="display:flex; justify-content:space-between; align-items:center; background-color:#374151; padding:0.4rem 0.75rem; border-radius:0.4rem; margin-bottom:0.4rem; cursor:default; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            <span title="{{ cam.name }}">{{ cam.name }}</span>
+            <button onclick="openModal('{{ url_for('video', camera_id=cam.id) }}')"
+              style="background-color:#2563eb; border:none; border-radius:0.4rem; padding:0.25rem 0.6rem; color:white; font-size:0.85rem; cursor:pointer; transition: background-color 0.2s ease;">
+              ▶️ ดู
+            </button>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="no-cameras" style="color:#f87171; font-weight:600; text-align:center; margin-top:1rem;">❌ ไม่มีกล้องที่เพิ่มไว้</p>
+        {% endif %}
+      </div>
+
     </div>
   </div>
 
-  <!-- กริดวิดีโอ (กล้อง) อยู่บน -->
+  <!-- กริดวิดีโอ (กล้อง) อยู่ล่าง -->
   <div id="videoGrid" class="px-4">
     {% if cameras|length == 0 %}
-    <div id="noCameraMsg"
-      class="text-center text-red-400 font-semibold py-8 text-xl">❌ ไม่มีกล้อง CCTV ให้แสดง</div>
+    <div id="noCameraMsg" class="text-center text-red-400 font-semibold py-8 text-xl">
+      ❌ ไม่มีกล้อง CCTV ให้แสดง
+    </div>
     {% else %}
     {% for cam in cameras %}
     <div class="video-wrapper" data-camera-id="{{ cam.id }}">
-      <img src="{{ url_for('video', camera_id=cam.id) }}" alt="กล้อง {{ cam.name | e }}"
-        data-camera-id="{{ cam.id }}" onclick="openModal(this.src)" title="กล้อง {{ cam.name | e }}" />
+      <img src="{{ url_for('video', camera_id=cam.id) }}" alt="กล้อง {{ cam.name | e }}" data-camera-id="{{ cam.id }}"
+        onclick="openModal(this.src)" title="กล้อง {{ cam.name | e }}" />
       <div class="camera-caption">{{ cam.name }}</div>
 
       <!-- form ลบกล้อง -->
@@ -407,18 +324,6 @@
     </div>
     {% endfor %}
     {% endif %}
-  </div>
-
-  <!-- แผนที่หลัก war room อยู่ล่าง -->
-  <div id="mainMap" class="px-4"></div>
-
-  <!-- ปุ่มเลือกกริด -->
-  <div id="gridControls" style="display:none;">
-    <!-- ถ้าต้องการปุ่มกริดลอย -->
-    <!-- ตัวอย่างปุ่ม:
-    <button onclick="setGridSize(2)">2x2</button>
-    <button onclick="setGridSize(4)">4x4</button>
-    -->
   </div>
 
   <!-- Modal ฟอร์มเพิ่มกล้อง -->
@@ -472,6 +377,9 @@
     let miniMap, miniMarker;
     let currentGridSize = 2;
 
+    const settingsMenu = document.getElementById('settingsMenu');
+    const settingsToggleBtn = document.getElementById('settingsToggleBtn');
+
     function initMainMap() {
       const defaultCenter = [19.3, 97.97];
       mainMap = L.map('mainMap').setView(defaultCenter, 8);
@@ -491,16 +399,19 @@
 
         if (!isNaN(lat) && !isNaN(lng)) {
           const marker = L.marker([lat, lng]).addTo(mainMap);
-
           marker.on('click', function () {
             filterVideosByCamera(camId);
             openModal(videoUrl);
           });
-
           marker.bindTooltip(camName, { permanent: false, direction: 'top' });
         }
       })();
       {% endfor %}
+
+      setTimeout(() => {
+        mainMap.invalidateSize();
+        document.getElementById('mapSpinner').style.display = 'none';
+      }, 600);
     }
 
     function setGridSize(n) {
@@ -510,152 +421,171 @@
       grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
     }
 
-    // เปิด modal วิดีโอ
     function openModal(src) {
       const modal = document.getElementById('videoModal');
       const modalVideo = document.getElementById('modalVideo');
       modalVideo.src = src;
       modal.style.display = 'flex';
 
-      // ซ่อนปุ่มและแผนที่เมื่อดูวิดีโอเต็มจอ
-      document.getElementById('topButtons').style.display = 'none';
+      settingsToggleBtn.style.display = 'none';
+      settingsMenu.style.display = 'none';
       document.getElementById('mainMap').style.display = 'none';
       document.getElementById('videoGrid').style.filter = 'blur(3px)';
     }
 
-    // ปิด modal วิดีโอ
     function closeModal() {
       const modal = document.getElementById('videoModal');
       modal.style.display = 'none';
       document.getElementById('modalVideo').src = '';
 
-      // แสดง element กลับ
-      document.getElementById('topButtons').style.display = 'flex';
+      settingsToggleBtn.style.display = 'block';
       document.getElementById('mainMap').style.display = 'block';
       document.getElementById('videoGrid').style.filter = 'none';
 
-      // แสดงกล้องทั้งหมดเมื่อปิด modal
       showAllVideos();
     }
 
-    // เปิด modal เพิ่มกล้อง
-    const addCameraModal = document.getElementById('addCameraModal');
-    const toggleAddBtn = document.getElementById('toggleAddBtn');
-    const cancelAddBtn = document.getElementById('cancelAddBtn');
-
-    toggleAddBtn.addEventListener('click', () => {
-      addCameraModal.style.display = 'flex';
-      document.getElementById('addCameraForm').reset();
-
-      // ซ่อนแผนที่หลักเพื่อไม่ให้ทับ modal
-      document.getElementById('mainMap').style.display = 'none';
-
-      if (miniMarker) {
-        miniMap.removeLayer(miniMarker);
-        miniMarker = null;
-      }
-      miniMap.setView([19.3, 97.97], 8);
-       setTimeout(() => {
-    miniMap.invalidateSize();
-  }, 100);
-    });
-
-    cancelAddBtn.addEventListener('click', () => {
-      addCameraModal.style.display = 'none';
-
-      // แสดงแผนที่หลักกลับมา
-      document.getElementById('mainMap').style.display = 'block';
-    });
-
-    // กดพื้นที่รอบนอก modal เพิ่มกล้องปิด modal
-    addCameraModal.addEventListener('click', (e) => {
-      if (e.target === addCameraModal) {
-        addCameraModal.style.display = 'none';
-        document.getElementById('mainMap').style.display = 'block';
-      }
-    });
-
-    // รายชื่อกล้อง dropdown toggle
-    const toggleCameraListBtn = document.getElementById('toggleCameraListBtn');
-    const cameraListDropdown = document.getElementById('cameraListDropdown');
-
-    toggleCameraListBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (cameraListDropdown.style.display === 'block') {
-        cameraListDropdown.style.display = 'none';
-      } else {
-        cameraListDropdown.style.display = 'block';
-      }
-    });
-
-    // คลิกที่อื่นปิด dropdown รายชื่อกล้อง
-    document.addEventListener('click', () => {
-      if (cameraListDropdown.style.display === 'block') {
-        cameraListDropdown.style.display = 'none';
-      }
-    });
-
-    // แสดงกล้องทั้งหมด
+    // แสดงวิดีโอทั้งหมด (ฟังก์ชันช่วย)
     function showAllVideos() {
-      const vids = document.querySelectorAll('#videoGrid .video-wrapper');
-      vids.forEach(v => v.style.display = 'block');
+      const videos = document.querySelectorAll('#videoGrid .video-wrapper');
+      videos.forEach(v => v.style.display = '');
     }
 
-    // กรองแสดงเฉพาะกล้องที่เลือก (เมื่อกด marker หรือกดปุ่มดูจากรายชื่อ)
-    function filterVideosByCamera(cameraId) {
-      const vids = document.querySelectorAll('#videoGrid .video-wrapper');
-      vids.forEach(v => {
-        if (v.getAttribute('data-camera-id') === cameraId) {
-          v.style.display = 'block';
+    // ฟิลเตอร์แสดงเฉพาะกล้องที่เลือก
+    function filterVideosByCamera(camId) {
+      const videos = document.querySelectorAll('#videoGrid .video-wrapper');
+      videos.forEach(v => {
+        if (v.dataset.cameraId === camId) {
+          v.style.display = '';
         } else {
           v.style.display = 'none';
         }
       });
     }
 
-    // init mini map ใน modal เพิ่มกล้อง
+    // Toggle เมนูการตั้งค่า
+    settingsToggleBtn.addEventListener('click', () => {
+      if (settingsMenu.style.display === 'none' || settingsMenu.style.display === '') {
+        settingsMenu.style.display = 'block';
+        settingsToggleBtn.classList.add('active');
+      } else {
+        settingsMenu.style.display = 'none';
+        settingsToggleBtn.classList.remove('active');
+      }
+    });
+
+    // รายชื่อกล้องแบบ dropdown toggle
+    const toggleCameraListBtn = document.getElementById('toggleCameraListBtn');
+    const cameraListDropdown = document.getElementById('cameraListDropdown');
+    toggleCameraListBtn.addEventListener('click', () => {
+      if (cameraListDropdown.style.display === 'none' || cameraListDropdown.style.display === '') {
+        cameraListDropdown.style.display = 'block';
+      } else {
+        cameraListDropdown.style.display = 'none';
+      }
+    });
+
+    // modal เพิ่มกล้อง
+    const addCameraModal = document.getElementById('addCameraModal');
+    const toggleAddBtn = document.getElementById('toggleAddBtn');
+    const cancelAddBtn = document.getElementById('cancelAddBtn');
+
+    toggleAddBtn.addEventListener('click', () => {
+      addCameraModal.style.display = 'flex';
+
+      settingsMenu.style.display = 'none';
+      settingsToggleBtn.classList.remove('active');
+
+      resetAddCameraForm();
+
+      setTimeout(() => {
+        if (!miniMap) {
+          initMiniMap();
+        }
+      }, 300);
+    });
+
+    cancelAddBtn.addEventListener('click', () => {
+      addCameraModal.style.display = 'none';
+    });
+
+    function resetAddCameraForm() {
+      const form = document.getElementById('addCameraForm');
+      form.reset();
+
+      if (miniMarker) {
+        miniMap.removeLayer(miniMarker);
+        miniMarker = null;
+      }
+
+      miniMap.setView([19.3, 97.97], 10);
+    }
+
     function initMiniMap() {
-      miniMap = L.map('miniMap', {
-        zoomControl: true,
-        scrollWheelZoom: false,
-      }).setView([19.3, 97.97], 8);
+      miniMap = L.map('miniMap').setView([19.3, 97.97], 10);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
       }).addTo(miniMap);
 
       miniMap.on('click', function (e) {
+        const { lat, lng } = e.latlng;
         if (miniMarker) {
-          miniMarker.setLatLng(e.latlng);
+          miniMarker.setLatLng([lat, lng]);
         } else {
-          miniMarker = L.marker(e.latlng, { draggable: true }).addTo(miniMap);
-          miniMarker.on('dragend', function (event) {
-            const pos = event.target.getLatLng();
-            document.getElementById('latInput').value = pos.lat.toFixed(6);
-            document.getElementById('lngInput').value = pos.lng.toFixed(6);
+          miniMarker = L.marker([lat, lng], { draggable: true }).addTo(miniMap);
+          miniMarker.on('dragend', (evt) => {
+            const pos = evt.target.getLatLng();
+            updateLatLngInputs(pos.lat, pos.lng);
           });
         }
-        document.getElementById('latInput').value = e.latlng.lat.toFixed(6);
-        document.getElementById('lngInput').value = e.latlng.lng.toFixed(6);
+        updateLatLngInputs(lat, lng);
       });
 
-      // ถ้ามีค่าพิกัดในฟอร์มให้แสดง marker
-      const latVal = parseFloat(document.getElementById('latInput').value);
-      const lngVal = parseFloat(document.getElementById('lngInput').value);
-      if (!isNaN(latVal) && !isNaN(lngVal)) {
-        miniMarker = L.marker([latVal, lngVal], { draggable: true }).addTo(miniMap);
-        miniMap.setView([latVal, lngVal], 12);
+      // ถ้าผู้ใช้กรอก lat/lng เอง ให้ย้าย marker และแผนที่ไปตำแหน่งนั้น
+      const latInput = document.getElementById('latInput');
+      const lngInput = document.getElementById('lngInput');
+
+      latInput.addEventListener('input', updateMarkerFromInputs);
+      lngInput.addEventListener('input', updateMarkerFromInputs);
+    }
+
+    function updateLatLngInputs(lat, lng) {
+      const latInput = document.getElementById('latInput');
+      const lngInput = document.getElementById('lngInput');
+
+      latInput.value = lat.toFixed(6);
+      lngInput.value = lng.toFixed(6);
+    }
+
+    function updateMarkerFromInputs() {
+      const latInput = document.getElementById('latInput');
+      const lngInput = document.getElementById('lngInput');
+
+      const lat = parseFloat(latInput.value);
+      const lng = parseFloat(lngInput.value);
+
+      if (!isNaN(lat) && !isNaN(lng) && miniMap) {
+        if (miniMarker) {
+          miniMarker.setLatLng([lat, lng]);
+        } else {
+          miniMarker = L.marker([lat, lng], { draggable: true }).addTo(miniMap);
+          miniMarker.on('dragend', (evt) => {
+            const pos = evt.target.getLatLng();
+            updateLatLngInputs(pos.lat, pos.lng);
+          });
+        }
+        miniMap.setView([lat, lng], 12);
       }
     }
 
+    // เรียกใช้ initMainMap เมื่อโหลดเสร็จ
     window.addEventListener('load', () => {
       initMainMap();
-      initMiniMap();
-      setGridSize(currentGridSize);
+      setGridSize(4); // default grid 4x4
     });
   </script>
-
 </body>
 
 </html>
