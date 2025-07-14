@@ -8,11 +8,13 @@ import numpy as np
 from datetime import datetime, timezone
 from flask import (
     Flask, render_template, request, redirect, url_for,
-    Response, jsonify, flash
+    Response, jsonify, flash,session
 )
 from werkzeug.utils import secure_filename
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from werkzeug.utils import secure_filename
+
 
 load_dotenv()
 
@@ -22,8 +24,13 @@ app.secret_key = 'a0888150287'
 # Config
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB
+UPLOAD_FOLDER = os.path.join('static', 'uploads')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov'}
+# สร้างโฟลเดอร์ถ้ายังไม่มี
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov', 'avi', 'pdf'}
+
 
 # MongoDB setup
 MONGO_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
@@ -31,16 +38,16 @@ client = MongoClient(MONGO_URI)
 db = client['your_database_name']  # เปลี่ยนชื่อ DB ตามจริง
 uploads_collection = db['uploads']
 cameras_collection = db['cameras']  # คอลเลกชันเก็บกล้อง
+complaints_collection = db['complaints']
+posts_collection = db['posts']  # ✅ เพิ่มบรรทัดนี้
 
 
-RECORD_FOLDER = 'recordings'        # --- add (A1)
-os.makedirs(RECORD_FOLDER, exist_ok=True)  # --- add (A2)
+
 
 
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @app.route('/peopleShareing', methods=['GET', 'POST'])
@@ -220,7 +227,6 @@ class CameraStream:
 
 camera_streams = {}
 
-
 def get_camera_stream(camera_id, rtsp_url):
     if camera_id not in camera_streams:
         camera_streams[camera_id] = CameraStream(rtsp_url)
@@ -261,8 +267,12 @@ def load_cameras():
     for cam in cameras:
         cam['_id'] = str(cam['_id'])  # แปลง ObjectId เป็น string สำหรับใช้งานใน template หรือ API
     return cameras
+
+
+# สร้างตัวแปร global cache สำหรับเก็บสถานะกล้อง (True = online, False = offline)
 camera_status_cache = {}
 
+# ฟังก์ชัน background thread เช็คสถานะกล้องเป็นระยะ
 def check_camera_status_periodically():
     while True:
         cameras = list(cameras_collection.find())
@@ -275,71 +285,16 @@ def check_camera_status_periodically():
             camera_status_cache[cam_id] = status
         time.sleep(20)  # เช็คทุก 20 วินาที
 
-def record_camera_stream(camera_id, rtsp_url):   # --- add (B1)
-    """
-    อัดสตรีม RTSP เป็นไฟล์ MP4 แยกตาม ‘วัน-ชั่วโมง’
-    """
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-
-    while True:
-        # สร้างชื่อไฟล์ใหม่ทุก 1 ชม.
-        now = datetime.now()
-        date_part = now.strftime("%Y-%m-%d")
-        hour_part = now.strftime("%H")
-        filename = f"{RECORD_FOLDER}/cam{camera_id}_{date_part}_{hour_part}.mp4"
-
-        cap = cv2.VideoCapture(rtsp_url)
-        if not cap.isOpened():
-            print(f"[ERR] cam{camera_id}: open RTSP failed – retry in 10 s")
-            cap.release()
-            time.sleep(10)
-            continue
-
-        # อ่านความละเอียดจริงจากสตรีม
-        width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)  or 640)
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) or 480)
-        fps    = cap.get(cv2.CAP_PROP_FPS)
-        if fps is None or fps <= 1:
-            fps = 15                      # เซ็ต fps เริ่มต้นถ้าอ่านไม่ได้
-
-        out = cv2.VideoWriter(filename, fourcc, fps, (width, height))
-        start_ts = time.time()
-
-        while time.time() - start_ts < 3600:  # **บันทึก 1 ชั่วโมง**
-            ret, frame = cap.read()
-            if not ret or frame is None:
-                print(f"[WARN] cam{camera_id}: read frame fail – restart chunk")
-                break
-            out.write(frame)
-
-        out.release()
-        cap.release()
-        print(f"[INFO] cam{camera_id}: saved {filename}")
-        time.sleep(1)  # รอ 1 วินาทีก่อนเริ่มรอบใหม่
-
-
-def start_recording_all_cameras():   # --- add (C1)
-    # เรียกหลัง Mongo เชื่อมต่อเสร็จแล้ว
-    cameras = list(cameras_collection.find())  # ใช้คอลเลกชันเดียวกับระบบหลัก
-    for cam in cameras:
-        cam_id   = cam.get('id')
-        rtsp_url = cam.get('rtsp_url')
-        if not cam_id or not rtsp_url:
-            continue
-        threading.Thread(
-            target=record_camera_stream,
-            args=(cam_id, rtsp_url),
-            daemon=True
-        ).start()
-        print(f"[INFO] cam{cam_id}: recording thread started")
-
 # เรียก start thread ตอนเริ่ม app
 status_thread = threading.Thread(target=check_camera_status_periodically, daemon=True)
 status_thread.start()
-start_recording_all_cameras()        # --- add (D1)
+
 # --- Flask routes ---
 @app.route('/')
 def opening():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
     num_food = uploads_collection.count_documents({"category": "ร้านอาหาร"})
     num_tourism = uploads_collection.count_documents({"category": "สถานที่ท่องเที่ยว"})
     cameras = load_cameras()
@@ -349,6 +304,67 @@ def opening():
                            num_food=num_food,
                            num_tourism=num_tourism,
                            num_cameras=num_cameras)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if username == 'admin' and password == '1234':
+            session['user'] = username
+            return redirect(url_for('opening'))  # ไปหน้า /
+        else:
+            flash('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error')
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    flash('ออกจากระบบแล้ว', 'info')
+    return redirect(url_for('login'))
+
+
+@app.route('/complaints', methods=['GET', 'POST'])
+def complaints():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        content = request.form.get('content')
+        uploader = request.form.get('uploader')
+
+        media_urls = []
+        files = request.files.getlist('files[]')  # ต้องเป็น files[] ตามฟอร์ม
+
+        for file in files:
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                # เพิ่ม timestamp หรือ unique id เพื่อป้องกันชื่อไฟล์ซ้ำ
+                unique_name = f"{datetime.now().strftime('%Y%m%d%H%M%S%f')}_{filename}"
+                save_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+                file.save(save_path)
+
+                # สร้าง URL สำหรับแสดงในเว็บ
+                media_url = url_for('static', filename=f'uploads/{unique_name}')
+                media_urls.append(media_url)
+
+        # สร้างข้อมูลโพสต์
+        post_data = {
+            'title': title,
+            'content': content,
+            'uploader': uploader,
+            'media_urls': media_urls,
+            'created_at': datetime.now()
+        }
+
+        # สมมติ posts_collection เป็น MongoDB collection ของคุณ
+        posts_collection.insert_one(post_data)
+
+        return redirect('/complaints')
+
+    # ถ้าเป็น GET ดึงโพสต์มาแสดง
+    posts = list(posts_collection.find().sort('created_at', -1))
+    return render_template('complaints.html', posts=posts)
+
+
 
 
 @app.route('/weather')
@@ -403,9 +419,13 @@ def camera():
 
         return redirect(url_for('camera'))
 
-    # อัปเดตสถานะกล้อง
+    # ใช้สถานะจาก cache แทนเช็คจริงทุกครั้ง
     for cam in cameras:
-        cam['status'] = "ออนไลน์" if cam.get('rtsp_url') and is_camera_online(cam['rtsp_url']) else "ออฟไลน์" if cam.get('rtsp_url') else "ไม่มี URL"
+        cam_id = cam.get('id')
+        if cam.get('rtsp_url'):
+            cam['status'] = "ออนไลน์" if camera_status_cache.get(cam_id, False) else "ออฟไลน์"
+        else:
+            cam['status'] = "ไม่มี URL"
 
     return render_template('camera.html', cameras=cameras)
 

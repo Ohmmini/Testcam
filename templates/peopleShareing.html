@@ -25,7 +25,21 @@
       padding: 1rem;
       overflow-y: auto;
     }
-
+    #popupOverlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999;
+    }
+    #popupOverlay img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 8px;
+      box-shadow: 0 0 10px white;
+    }
     form {
       width: 100%;
       max-width: 600px;
@@ -126,10 +140,16 @@
     </form>
   </div>
 
+  <div class="back-button">
+    <a href="{{ url_for('opening') }}" style="font-size: 2rem; text-decoration: none; color: inherit;">
+      &lt;
+    </a>
+  </div>
+
   <!-- รายการโปรไฟล์ -->
   <div class="max-w-7xl mx-auto mt-12 px-2">
     <div
-      class="grid gap-x-4 gap-y-6 justify-items-center"
+      class="grid gap-x-2 gap-y-6 justify-items-start"
       style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));"
     >
       {% for profile in profiles %}
@@ -149,7 +169,8 @@
               </video>
             {% else %}
               <img src="{{ profile.media_url }}" alt="รูปสถานที่"
-                   class="w-full h-full object-cover rounded-md" />
+                   class="w-full h-full object-cover rounded-md cursor-pointer"
+                   onclick="showPopup('{{ profile.media_url }}')" />
             {% endif %}
           {% else %}
             <p class="text-gray-400 italic text-center mt-4">ไม่มีสื่อแนะนำ</p>
@@ -158,6 +179,10 @@
       </div>
       {% endfor %}
     </div>
+  </div>
+
+  <div id="popupOverlay" onclick="hidePopup()">
+    <img id="popupImage" src="" alt="รูปเต็ม" />
   </div>
 
   <script>
@@ -189,6 +214,15 @@
         formMarker = L.marker(e.latlng).addTo(formMap);
       }
     });
+
+    function showPopup(src) {
+      document.getElementById("popupImage").src = src;
+      document.getElementById("popupOverlay").style.display = "flex";
+    }
+
+    function hidePopup() {
+      document.getElementById("popupOverlay").style.display = "none";
+    }
   </script>
 
 </body>
