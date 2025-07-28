@@ -2,7 +2,8 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <title>Smart City Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CS Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
@@ -10,30 +11,52 @@
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
   <style>
+  
+  @keyframes marqueeScroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marqueeScroll 20s linear infinite;
+}
+
+
     .responsive-wrapper {
       display: flex;
       flex-direction: row;
       justify-content: flex-start;
       flex-wrap: wrap;
-      gap: 1rem;
-      padding: 2rem;
+      gap: 1 rem;
+      padding: 1rem;
     }
 
     .function_card {
-      position: relative;
-      background-color: rgba(45, 55, 72, 0.3);
-      border-radius: 0.5rem;
-      font-size: 1.125rem;
-      width: 300px;
-      height: 400px;
-      backdrop-filter: blur(10px);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      padding: 1rem;
-      overflow: hidden;
-      
-    }
+  position: relative;
+  background-color: rgba(59, 60, 62, 0.3);
+  border-radius: 0.5rem;
+  font-size: 1.125rem;
+  width: 300px;
+  height: 400px;
+  backdrop-filter: blur(10px);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  overflow: hidden;
+
+  border: 2px solid rgba(255, 255, 255, 0.4);
+
+  /* เพิ่มระยะห่างรอบๆ การ์ด */
+  margin: 0.5rem;
+}
+
     /* กึ่งกลางเนื้อหาใน Smart People */
 .smart-people-content {
   width: 100%;
@@ -88,6 +111,10 @@
   }
 }
 
+.line-center {
+  line-height: 1;
+}
+
 .renewable-indicator {
   display: inline-block;
   width: 12px;
@@ -126,10 +153,7 @@
 
     /* ปรับสไตล์สำหรับ weather ให้เรียงแนวตั้ง ไอคอนใหญ่ */
 #weather, #aqi {
-  position: absolute;
-  top: 3.5rem;
-  left: 1rem;
-  right: 1rem;
+  position: static; /* หรือ ลบบรรทัดนี้ไปเลย */
   margin-top: 0;
   color: #b0e0e6;
   font-weight: 300;
@@ -138,6 +162,7 @@
   align-items: center;
   gap: 0.5rem;
 }
+
 
     #weather-city {
       font-size: 1.2rem;
@@ -183,6 +208,13 @@
       0%   { transform: translateX(0%); }
       100% { transform: translateX(-100%); }
     }
+
+
+.animate-marquee {
+  animation: marquee 15s linear infinite;
+}
+
+    
 
     .switch-section {
       margin-top: 1rem;
@@ -234,7 +266,7 @@
     }
     .energy-value {
       text-align: center;
-      margin-top: 2rem;
+      margin-top: 5rem;
       color: #ffce56;
       font-weight: 600;
     }
@@ -354,12 +386,25 @@
   display: block !important;
 }
 
+  .glow-green{
+    color: #22c55e; /* สีเขียว Tailwind green-500 */
+    text-shadow:
+      0 0 6px #22c55e,
+      0 0 12px #22c55e;
+      }
+  .glow-red {
+    color: #ef4444; /* สีแดง Tailwind red-500 */
+    text-shadow:
+      0 0 6px #ef4444,
+      0 0 12px #ef4444;
+  }
 
   </style>
 </head>
 <body class="bg-black text-white min-h-screen">
 
   <div class="responsive-wrapper">
+
     <!-- Smart Economy -->
 <a href="/peopleShareing" style="text-decoration: none;">
   <div class="function_card hover:shadow-lg transition" style="position: relative; padding: 1rem;">
@@ -377,20 +422,75 @@
     </div>
 
     <!-- เนื้อหาข้อมูล -->
-    <div class="bg-gray-900 bg-opacity-60 rounded-xl mt-4 p-4 text-gray-200 shadow-lg font-sans w-72 max-w-full">
-      <h3 class="text-yellow-400 font-extrabold text-xl mb-4 text-center">ภาพรวมธุรกิจ</h3>
-      <div class="flex justify-between border-b border-gray-700 py-2">
-        <span class="text-lg">🏞️ สถานที่ท่องเที่ยว</span>
-        <span class="font-semibold">{{ num_tourism }}</span>
-      </div>
-      <div class="flex justify-between py-2">
-        <span class="text-lg">🍛 ร้านอาหาร</span>
-        <span class="font-semibold">{{ num_food }}</span>
-      </div>
+<div class="bg-gray-900 bg-opacity-60 rounded-xl mt-1 p-4 text-gray-200 shadow-lg font-sans max-w-[270px] mx-auto overflow-hidden min-h-[400px]">
+{% if latest_media_url %}
+  {% set ext = latest_media_url.rsplit('.', 1)[-1].lower() %}
+  {% if ext in ['mp4', 'webm', 'ogg'] %}
+    <video controls autoplay loop muted playsinline
+      style="width: 100%; max-height: 125px; border-radius: 8px; margin-bottom: 16px;">
+      <source src="{{ latest_media_url }}" type="video/{{ ext }}">
+      วิดีโอนี้ไม่รองรับเบราว์เซอร์ของคุณ
+    </video>
+  {% else %}
+    <img src="{{ latest_media_url }}" alt="media image"
+      style="width: 100%; max-height: 125px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;" />
+  {% endif %}
+{% else %}
+  <p>ไม่มีสื่อให้แสดง</p>
+{% endif %}
+
+
+
+
+
+
+
+  <!-- ข้อความวิ่ง ปรับ font size เล็กลง -->
+  <div class="relative overflow-hidden h-8 border-b border-gray-700 py-1 mb-4">
+    <div class="marquee-track whitespace-nowrap text-sm">
+      <span class="font-semibold mr-16">{{ latest_name }} : {{ latest_description }}</span>
+      <span class="font-semibold mr-16">{{ latest_name }} : {{ latest_description }}</span>
     </div>
   </div>
-</a>
 
+  <!-- จำนวนสถานที่ท่องเที่ยว และ ร้านอาหาร ปรับ font size เล็กลง -->
+  <div class="flex justify-between border-b border-gray-700 py-2 text-sm">
+    <span>🏞️</span>
+    <span class="font-semibold">{{ num_tourism }}</span>
+  </div>
+  <div class="flex justify-between py-2 text-sm">
+    <span>🍛</span>
+    <span class="font-semibold">{{ num_food }}</span>
+  </div>
+</div>
+<div style="
+  position: absolute; 
+  bottom: 0.2rem; 
+  right: 1.5rem; 
+  background-color: #374151; 
+  color: white; 
+  border-radius: 9999px; 
+  width: 2rem; 
+  height: 2rem; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  cursor: pointer; 
+  user-select: none;
+">
+  <span style="
+    display: inline-block; 
+    transform: translateY(-2px); 
+    font-size: 1.25rem; 
+    font-weight: 700; 
+    line-height: 1;
+  ">+</span>
+</div>
+
+
+
+  </div>
+</a>
     <!-- Smart Environment -->
    <a href="/weather" style="text-decoration: none;">
   <div class="function_card" style="position: relative;">
@@ -407,21 +507,33 @@
       เป็นเมืองที่มุ่งเน้นการดูแลรักษาสิ่งแวดล้อมและคุณภาพอากาศ พร้อมสนับสนุนการใช้พลังงานสะอาดและลดมลพิษ
     </div>
 
-    <div id="weather">
-      <span id="weather-city"></span>
-      <span id="weather-icon"></span>
-      <span id="weather-temp" class="highlight-value"></span>
-      <span id="weather-desc"></span>
+    <!-- แสดง Weather และ AQI พร้อมกัน ซ้าย-ขวา -->
+<div class="flex justify-center items-center w-full">
+  <div id="weather" class="flex flex-col items-center w-1/2">
+    <span id="weather-city"></span>
+    <span id="weather-icon" style="font-size: 2rem;"></span>
+    <span id="weather-temp" class="highlight-value"></span>
+    <span id="weather-desc"></span>
+  </div>
+</div>
+  <!-- AQI -->
+  <!--
+  <div id="aqi" class="flex flex-col items-end w-1/2">
+    <span id="aqi-city"></span>
+    <span id="aqi-icon" style="font-size: 2.5rem;"></span>
+    <span id="aqi-value" class="highlight-value"></span>
+    <span id="aqi-desc"></span>
+  </div>
+</div>
+-->
+
+    <!-- Forecast marquee -->
+    <div id="forecast-marquee" class="forecast-marquee mt-2">
+      <span></span>
     </div>
-    <div id="aqi" class="switch-section hidden">
-      <span id="aqi-city"></span>
-      <span id="aqi-icon" style="font-size: 2.5rem;"></span>
-      <span id="aqi-value" class="highlight-value"></span>
-      <span id="aqi-desc"></span>
-    </div>
-    <div id="forecast-marquee" class="forecast-marquee"><span></span></div>
   </div>
 </a>
+
 
     <!-- Other Cards -->
  <div class="function_card" style="position: relative;">
@@ -439,7 +551,7 @@
   </div>
 </div>
 
-<a href="/Living" style="text-decoration: none;">
+<a href="/camera" style="text-decoration: none;">
   <div class="function_card hover:shadow-lg transition" style="position: relative;">
     <div class="header" style="display: flex; align-items: center; justify-content: space-between;">
       <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -449,22 +561,43 @@
       <span class="info-icon" id="infoToggleLiving" title="ดูคำอธิบาย">ℹ</span>
     </div>
 
-
     <!-- Tooltip box -->
     <div id="infoBoxLiving" class="tooltip-box">
        เป็นเมืองที่มุ่งเน้นให้บริการที่อำนวยความสะดวกต่อการดำรงชีวิต เช่น การบริการด้านสุขภาพให้ประชาชนมีสุขภาพและสุขภาวะที่ดี โดยเฉพาะอย่างยิ่งเพื่อเตรียมพร้อมเข้าสู่สังคมสูงอายุ การเพิ่มความปลอดภัยของประชาชนด้วยการเฝ้าระวังภัยจากอาชญากรรม ไปจนถึงการส่งเสริมให้เกิดสิ่งอำนวยความสะดวกสำหรับการดำรงชีวิตที่เหมาะสม
     </div>
-    <div class="bg-gray-900 bg-opacity-60 rounded-xl mt-4 p-4 text-gray-200 shadow-lg font-sans w-72 max-w-full">
-      <h3 class="text-yellow-400 font-extrabold text-xl mb-4 text-center">จำนวนกล้องวงจรปิด</h3>
-      <div class="flex justify-between py-2">
-    <span class="text-lg">🎥 กล้อง CCTV</span>
-    <span class="font-semibold">{{ num_cameras }}</span>
+
+<div class="bg-gray-900 bg-opacity-60 rounded-xl mt-4 p-4 text-gray-200 shadow-lg font-sans w-72 h-60 max-w-full">
+  <div class="flex flex-col space-y-3 text-sm py-2">
+       <div>
+      <span class="font-semibold text-lg">Number of CCTV</span>
+    </div>
+    <div>
+      <span class="font-semibold text-lg">{{ num_cameras }}</span>
+    </div>
+
+    <div class="flex items-center gap-2 text-base">
+  <span class="text-3xl glow-green">●</span>
+  <span class="text-base">Online</span>
+  <span class="font-semibold text-base">{{ num_online }}</span>
+</div>
+
+
+    <div class="flex items-center gap-2">
+      <span class="text-3xl glow-red">●</span>
+      <span class="text-base">Offline</span>
+      <span class="font-semibold text-base">{{ num_offline }}</span>
+    </div>
+
   </div>
-  </div>
+</div>
+
   </div>
 </a>
 
-<div class="function_card" style="position: relative;">
+
+<div class="function_card hover:shadow-lg transition" 
+     onclick="window.location.href='/complaints'" 
+     style="position: relative; cursor: pointer;">
   <div class="header" style="display: flex; align-items: center; justify-content: space-between;">
     <div style="display: flex; align-items: center; gap: 0.5rem;">
       <span class="emoji_icon">🧑🏻‍🤝‍🧑🏼</span>
@@ -472,27 +605,44 @@
     </div>
     <span class="info-icon" id="infoTogglePeople" title="ดูคำอธิบาย">ℹ</span>
   </div>
-  <div class="bg-gray-900 bg-opacity-60 rounded-xl w-72 text-gray-200 shadow-lg font-sans smart-people-content">
-    <h3 class="text-yellow-400 font-extrabold text-xl mb-4 text-center">ภาพรวมประชากร</h3>
-    <div class="flex justify-between border-b border-gray-700 py-2 w-full max-w-[280px]">
-      <span class="text-lg">🧑‍💼 ผู้ชาย</span>
-      <span class="font-semibold">3,431 คน</span>
-    </div>
-    <div class="flex justify-between border-b border-gray-700 py-2 w-full max-w-[280px]">
-      <span class="text-lg">👩‍💼 ผู้หญิง</span>
-      <span class="font-semibold">3,537 คน</span>
-    </div>
-    <div class="flex justify-between py-2 w-full max-w-[280px]">
-       <span class="text-sm">📊 ความหนาแน่น</span>
-      <span class="text-sm">1,161.33 คน/ตร.กม.</span>
-    </div>
-  </div>
 
-  <!-- Tooltip box -->
-  <div id="infoBoxPeople" class="tooltip-box">
-    เป็นเมืองที่มุ่งเน้นพัฒนาพลเมืองให้มีความรู้และสามารถประยุกต์ใช้เทคโนโลยีให้เกิดประโยชน์ทั้งในเชิงเศรษฐกิจและการดำรงชีวิต สร้างสภาพแวดล้อมที่ส่งเสริมความคิดสร้างสรรค์และการเรียนรู้นอกระบบ รวมถึงการส่งเสริมการอยู่ร่วมกันด้วยความหลากหลายทางสังคม
+<div id="infoBoxPeople" class="tooltip-box">
+       เป็นเมืองที่มุ่งเน้นพัฒนาพลเมืองให้มีความรู้และสามารถประยุกต์ใช้เทคโนโลยีให้เกิดประโยชน์ทั้งในเชิงเศรษฐกิจและการดำรงชีวิต สร้างสภาพแวดล้อมที่ส่งเสริมความคิดสร้างสรรค์และการเรียนรู้นอกระบบ รวมถึงการส่งเสริมการอยู่ร่วมกันด้วยความหลากหลายทางสังคม
+    </div>
+
+
+ <div class="bg-gray-900 bg-opacity-60 rounded-xl p-4 text-gray-200 shadow-lg font-sans w-76 h-60 max-w-full flex flex-col items-center justify-center overflow-hidden">
+  <div class="text-8xl font-extrabold mb-2 text-yellow-400 tracking-wide drop-shadow-lg italic">
+    {{ num_posts }}
   </div>
+  <div class="text-xl font-medium">Post</div>
 </div>
+<div style="
+  position: absolute; 
+  bottom: 0.2rem; 
+  right: 1.5rem; 
+  background-color: #374151; 
+  color: white; 
+  border-radius: 9999px; 
+  width: 2rem; 
+  height: 2rem; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  cursor: pointer; 
+  user-select: none;
+">
+  <span style="
+    display: inline-block; 
+    transform: translateY(-2px); 
+    font-size: 1.25rem; 
+    font-weight: 700; 
+    line-height: 1;
+  ">+</span>
+</div>
+
+</div>
+
 
 
 
@@ -513,20 +663,39 @@
     </div>
   </div>
 </a>
-<div class="function_card" style="position: relative;">
-  <div class="header" style="display: flex; align-items: center; justify-content: space-between;">
-    <div style="display: flex; align-items: center; gap: 0.5rem;">
-      <span class="emoji_icon">🚌</span>
-      <span class="topic_text">Smart Mobility</span>
-    </div>
-    <span class="info-icon" id="infoToggleMobility" title="ดูคำอธิบาย">ℹ</span>
-  </div>
 
-  <!-- Tooltip box -->
-  <div id="infoBoxMobility" class="tooltip-box">
-     เป็นเมืองที่มุ่งเน้นเพิ่มความสะดวก ประสิทธิภาพ และความปลอดภัยในการเดินทางและขนส่ง และเป็นมิตรกับสิ่งแวดล้อม
-  </div>
+
+
+  <div class="function_card" style="cursor: pointer; position: relative;">
+    <div class="header" style="display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span class="emoji_icon">🚌</span>
+        <span class="topic_text">Smart Mobility</span>
+      </div>
+      <span class="info-icon" id="infoToggleMobility" title="ดูคำอธิบาย">ℹ</span>
+    </div>
+
+    <!-- จำนวนป้ายรถประจำทาง -->
+<div class="mobility-value" id="mobility-value" style="
+  font-size: 2rem;           /* ขยายใหญ่ขึ้น 0.5 เท่า */
+  color: #7cda98;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  text-align: center;
+  margin-top: 6rem;
+">
+  <span>Bus Terminal :</span>
+  <span>1</span>
 </div>
+
+    <!-- Tooltip box -->
+    <div id="infoBoxMobility" class="tooltip-box">
+      เป็นเมืองที่มุ่งเน้นเพิ่มความสะดวก ประสิทธิภาพ และความปลอดภัยในการเดินทางและขนส่ง และเป็นมิตรกับสิ่งแวดล้อม
+    </div>
+  </div>
 
 
 
@@ -575,7 +744,7 @@
     }
 
     // ดึงข้อมูล AQI จาก OpenWeatherMap
-    async function fetchAQI() {
+  /* async function fetchAQI() {
       try {
         const lat = 19.3010;
         const lon = 97.9654;
@@ -596,38 +765,14 @@
       } catch (e) {
         console.error("AQI fetch error:", e);
       }
-    }
-
-    // สลับแสดงระหว่าง Weather กับ AQI ทุก 10 วินาที
-    function toggleSections() {
-      const weather = document.getElementById("weather");
-      const aqi = document.getElementById("aqi");
-      if (weather.classList.contains("hidden")) {
-        aqi.classList.add("fade-out-scale");
-        weather.classList.remove("hidden");
-        weather.classList.add("fade-in-scale");
-        setTimeout(() => {
-          aqi.classList.add("hidden");
-          aqi.classList.remove("fade-out-scale");
-        }, 600);
-      } else {
-        weather.classList.add("fade-out-scale");
-        aqi.classList.remove("hidden");
-        aqi.classList.add("fade-in-scale");
-        setTimeout(() => {
-          weather.classList.add("hidden");
-          weather.classList.remove("fade-out-scale");
-        }, 600);
-      }
-    }
+    
+*/
 
     // โหลดข้อมูลตอนเริ่ม และตั้ง interval อัพเดต
     fetchCurrentWeather();
-    fetchAQI();
+    //fetchAQI();
     setInterval(fetchCurrentWeather, 600000); // ทุก 10 นาที
-    setInterval(fetchAQI, 600000); // ทุก 10 นาที
-    setInterval(toggleSections, 10000); // ทุก 10 วินาที
-
+   // setInterval(fetchAQI, 600000); // ทุก 10 นาที
   </script>
 
   <!-- JavaScript: Forecast จาก Open-Meteo -->
@@ -882,5 +1027,6 @@ infoToggleMobility.addEventListener('click', (e) => {
 });
 
 </script>
+
 </body>
 </html>

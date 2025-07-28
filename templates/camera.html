@@ -14,25 +14,40 @@
   <script defer src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
-    html,
-    body {
+    html, body {
       height: 100%;
       margin: 0;
       padding: 0;
     }
-
+    
     /* แผนที่หลัก war room */
-    #mainMap {
-      width: 100%;
-      height: 60vh;
-      max-height: 600px;
-      min-height: 300px;
-      border-radius: 0.5rem;
-      border: 1px solid #ccc;
-      margin-top: 1rem;
-      transition: opacity 0.3s ease;
-      background: #e5e5e5;
-    }
+#mainMap {
+  width: 95%;
+  max-width: 720px;
+  min-height: 400px;
+  height: 400px; /* เพิ่ม height */
+  margin: 1rem auto 0 auto;
+  display: block;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  background: #e5e5e5;
+}
+
+
+
+#mainMap > .leaflet-container {
+  position: absolute !important;
+  top: 0; bottom: 0; left: 0; right: 0;
+  height: 100% !important;
+  width: 100% !important;
+}
+
+#miniMap {
+  height: 300px;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+}
+
 
     /* warroom video grid */
     #videoGrid {
@@ -141,7 +156,7 @@
       padding: 1rem;
     }
 
-    #addCameraModal>div {
+    #addCameraModal > div {
       background-color: rgba(0, 0, 0, 0.9);
       border-radius: 1rem;
       padding: 1.5rem;
@@ -167,7 +182,7 @@
       padding: 1rem;
     }
 
-    #videoModal>div {
+    #videoModal > div {
       position: relative;
       max-width: 90vw;
       max-height: 90vh;
@@ -218,25 +233,37 @@
         padding-inline: 4rem;
       }
     }
+
+.hidden-map {
+  visibility: hidden !important;
+  height: 0 !important;
+}
+.hidden-settings {
+  display: none !important;
+}
   </style>
 </head>
 
 <body class="bg-gray-900 text-white flex flex-col py-10 min-h-screen w-full mx-0">
   <!-- Spinner แสดงโหลดแผนที่ -->
-  <div id="mapSpinner" style="position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
+  <div id="mapSpinner"
+       style="position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
               background-color: rgba(0, 0, 0, 0.6); color: white; padding: 0.75rem 2rem;
               border-radius: 1rem; z-index: 9999; display: flex; align-items: center; gap: 0.5rem;">
-    <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+    <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+         viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10"
+              stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8v8z"></path>
     </svg>
     <span>กำลังโหลดแผนที่...</span>
   </div>
 
   <!-- ปุ่มกลับหน้า index.html -->
   <div class="w-full mb-4 flex justify-start px-4">
-    <a href="{{ url_for('Living') }}"
-      class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-white font-semibold transition">
+    <a href="{{ url_for('opening') }}"
+       class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-white font-semibold transition">
       ←
     </a>
   </div>
@@ -292,8 +319,7 @@
           {% endfor %}
         </ul>
         {% else %}
-        <p class="no-cameras" style="color:#f87171; font-weight:600; text-align:center; margin-top:1rem;">❌
-          ไม่มีกล้องที่เพิ่มไว้</p>
+        <p class="no-cameras" style="color:#f87171; font-weight:600; text-align:center; margin-top:1rem;">❌ ไม่มีกล้องที่เพิ่มไว้</p>
         {% endif %}
       </div>
 
@@ -309,19 +335,19 @@
     {% else %}
     {% for cam in cameras %}
     <div class="video-wrapper" data-camera-id="{{ cam.id }}">
-      <img src="{{ url_for('video', camera_id=cam.id) }}" alt="กล้อง {{ cam.name | e }}" data-camera-id="{{ cam.id }}"
-        onclick="openModal(this.src)" title="กล้อง {{ cam.name | e }}" />
+    <img src="{{ url_for('video', camera_id=cam.id) }}" alt="กล้อง {{ cam.name | e }}" data-camera-id="{{ cam.id }}"
+            onclick="openModal(this.src)" title="กล้อง {{ cam.name | e }}" />
+
       <div class="camera-caption">{{ cam.name }}</div>
 
       <!-- form ลบกล้อง -->
-      <form method="POST" action="{{ url_for('delete_camera', camera_id=cam.id) }}"
-        onsubmit="return confirm('ยืนยันการลบกล้องนี้หรือไม่?')">
-        <button type="submit" class="delete-btn" title="ลบกล้อง">×</button>
-      </form>
+     <button class="delete-btn" title="ลบกล้อง" onclick="deleteCamera('{{ cam.id }}')">×</button>
+
     </div>
     {% endfor %}
     {% endif %}
   </div>
+
 
   <!-- Modal ฟอร์มเพิ่มกล้อง -->
   <div id="addCameraModal" role="dialog" aria-modal="true" aria-labelledby="addCameraTitle">
@@ -379,7 +405,7 @@
 
     function initMainMap() {
       const defaultCenter = [19.3, 97.97];
-      mainMap = L.map('mainMap').setView(defaultCenter, 8);
+      mainMap = L.map('mainMap').setView(defaultCenter, 14);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -408,7 +434,7 @@
       setTimeout(() => {
         mainMap.invalidateSize();
         document.getElementById('mapSpinner').style.display = 'none';
-      }, 600);
+      }, 800);
     }
 
     function setGridSize(n) {
@@ -418,35 +444,42 @@
       grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
     }
 
-    function openModal(src) {
-      const modal = document.getElementById('videoModal');
-      const modalVideo = document.getElementById('modalVideo');
-      modalVideo.src = src;
-      modal.style.display = 'flex';
+   function openModal(src) {
+  const modal = document.getElementById('videoModal');
+  const modalVideo = document.getElementById('modalVideo');
+  modalVideo.src = src;
+  modal.style.display = 'flex';
 
-      settingsToggleBtn.style.display = 'none';
-      settingsMenu.style.display = 'none';
-      document.getElementById('mainMap').style.display = 'none';
-      document.getElementById('videoGrid').style.filter = 'blur(3px)';
-    }
+  settingsToggleBtn.classList.add('hidden-settings');
+  settingsMenu.classList.add('hidden-settings');
+  document.getElementById('mainMap').classList.add('hidden-map');
+  document.getElementById('videoGrid').style.filter = 'blur(3px)';
+  mainMap.invalidateSize();
+}
 
-    function closeModal() {
-      const modal = document.getElementById('videoModal');
-      modal.style.display = 'none';
-      document.getElementById('modalVideo').src = '';
 
-      settingsToggleBtn.style.display = 'block';
-      document.getElementById('mainMap').style.display = 'block';
-      document.getElementById('videoGrid').style.filter = 'none';
+function closeModal() {
+  const modal = document.getElementById('videoModal');
+  modal.style.display = 'none';
+  document.getElementById('modalVideo').src = '';
 
-      showAllVideos();
-    }
+  settingsToggleBtn.classList.remove('hidden-settings');
+  settingsMenu.classList.remove('hidden-settings');
 
-    // แสดงวิดีโอทั้งหมด (ฟังก์ชันช่วย)
-    function showAllVideos() {
-      const videos = document.querySelectorAll('#videoGrid .video-wrapper');
-      videos.forEach(v => v.style.display = '');
-    }
+  const mainMapEl = document.getElementById('mainMap');
+  mainMapEl.classList.remove('hidden-map');
+  mainMapEl.style.visibility = 'visible';
+  mainMapEl.style.height = '400px';
+
+  document.getElementById('videoGrid').style.filter = 'none';
+
+  setTimeout(() => {
+    mainMap.invalidateSize();
+  }, 300);
+
+  showAllVideos();
+}
+
 
     // ฟิลเตอร์แสดงเฉพาะกล้องที่เลือก
     function filterVideosByCamera(camId) {
@@ -486,102 +519,165 @@
     const addCameraModal = document.getElementById('addCameraModal');
     const toggleAddBtn = document.getElementById('toggleAddBtn');
     const cancelAddBtn = document.getElementById('cancelAddBtn');
+    
 
-    toggleAddBtn.addEventListener('click', () => {
-      addCameraModal.style.display = 'flex';
+toggleAddBtn.addEventListener('click', () => {
+  addCameraModal.style.display = 'flex';
+  settingsMenu.style.display = 'none';
 
-      settingsMenu.style.display = 'none';
-      settingsToggleBtn.classList.remove('active');
-
-      resetAddCameraForm();
-
-      setTimeout(() => {
-        if (!miniMap) {
-          initMiniMap();
-        }
-      }, 300);
-    });
+  setTimeout(() => {
+    if (!miniMap) {
+      initMiniMap();
+    } else {
+      miniMap.invalidateSize();
+    }
+  }, 800); // iPad ต้องรอนานกว่าปกติ
+});
 
     cancelAddBtn.addEventListener('click', () => {
       addCameraModal.style.display = 'none';
     });
 
-    function resetAddCameraForm() {
-      const form = document.getElementById('addCameraForm');
-      form.reset();
+ function resetAddCameraForm() {
+  const form = document.getElementById('addCameraForm');
+  form.reset();
 
-      if (miniMarker) {
-        miniMap.removeLayer(miniMarker);
-        miniMarker = null;
-      }
+  if (miniMarker && miniMap) {
+    miniMap.removeLayer(miniMarker);
+    miniMarker = null;
+  }
 
-      miniMap.setView([19.3, 97.97], 10);
-    }
+  if (miniMap) {
+    miniMap.setView([19.3, 97.97], 10);
+  }
+}
 
-    function initMiniMap() {
-      miniMap = L.map('miniMap').setView([19.3, 97.97], 10);
+  function initMiniMap() {
+  console.log("🚀 สร้าง miniMap");
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(miniMap);
+  miniMap = L.map('miniMap').setView([19.3, 97.97], 10);
 
-      miniMap.on('click', function (e) {
-        const { lat, lng } = e.latlng;
-        if (miniMarker) {
-          miniMarker.setLatLng([lat, lng]);
-        } else {
-          miniMarker = L.marker([lat, lng], { draggable: true }).addTo(miniMap);
-          miniMarker.on('dragend', (evt) => {
-            const pos = evt.target.getLatLng();
-            updateLatLngInputs(pos.lat, pos.lng);
-          });
-        }
-        updateLatLngInputs(lat, lng);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(miniMap);
+
+  // ✅ คลิกเพื่อปักหมุด
+  miniMap.on('click', function (e) {
+    const { lat, lng } = e.latlng;
+
+    if (miniMarker) {
+      miniMarker.setLatLng([lat, lng]); // ย้ายหมุดเดิม
+    } else {
+      miniMarker = L.marker([lat, lng], { draggable: true }).addTo(miniMap); // สร้างหมุดใหม่
+
+      // รองรับการลาก
+      miniMarker.on('dragend', (evt) => {
+        const pos = evt.target.getLatLng();
+        updateLatLngInputs(pos.lat, pos.lng);
       });
-
-      // ถ้าผู้ใช้กรอก lat/lng เอง ให้ย้าย marker และแผนที่ไปตำแหน่งนั้น
-      const latInput = document.getElementById('latInput');
-      const lngInput = document.getElementById('lngInput');
-
-      latInput.addEventListener('input', updateMarkerFromInputs);
-      lngInput.addEventListener('input', updateMarkerFromInputs);
     }
 
-    function updateLatLngInputs(lat, lng) {
-      const latInput = document.getElementById('latInput');
-      const lngInput = document.getElementById('lngInput');
+    updateLatLngInputs(lat, lng); // กรอกค่าละติจูด/ลองจิจูด
+  });
+  
 
-      latInput.value = lat.toFixed(6);
-      lngInput.value = lng.toFixed(6);
-    }
+  // ✅ ฟังก์ชันรองรับ input
+  const latInput = document.getElementById('latInput');
+  const lngInput = document.getElementById('lngInput');
 
-    function updateMarkerFromInputs() {
-      const latInput = document.getElementById('latInput');
-      const lngInput = document.getElementById('lngInput');
+  latInput.addEventListener('input', updateMarkerFromInputs);
+  lngInput.addEventListener('input', updateMarkerFromInputs);
 
-      const lat = parseFloat(latInput.value);
-      const lng = parseFloat(lngInput.value);
-
-      if (!isNaN(lat) && !isNaN(lng) && miniMap) {
-        if (miniMarker) {
-          miniMarker.setLatLng([lat, lng]);
-        } else {
-          miniMarker = L.marker([lat, lng], { draggable: true }).addTo(miniMap);
-          miniMarker.on('dragend', (evt) => {
-            const pos = evt.target.getLatLng();
-            updateLatLngInputs(pos.lat, pos.lng);
-          });
-        }
-        miniMap.setView([lat, lng], 12);
-      }
-    }
+  setTimeout(() => {
+    console.log("📏 เรียก invalidateSize()");
+    miniMap.invalidateSize();
+  }, 300);
+}
+function showAllVideos() {
+  const videos = document.querySelectorAll('#videoGrid .video-wrapper');
+  videos.forEach(v => {
+    v.style.display = 'block'; // หรือ '' ตาม CSS เดิมก็ได้
+  });
+}
 
     // เรียกใช้ initMainMap เมื่อโหลดเสร็จ
-    window.addEventListener('load', () => {
-      initMainMap();
-      setGridSize(4); // default grid 4x4
-    });
+  document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    initMainMap();
+    setGridSize(4);
+  }, 300); // หน่วง 300ms เพื่อให้ iPad เตรียม DOM และ CSS เสร็จ
+});
+  </script>
+
+<script>
+  // ปิด modal ถ้าคลิกนอกกล่อง (พื้นหลัง)
+  document.getElementById('addCameraModal').addEventListener('click', function (e) {
+    if (e.target === this) {
+      this.style.display = 'none';
+      resetAddCameraForm(); // Reset input + marker
+    }
+  });
+</script>
+
+  <script>
+  function updateLatLngInputs(lat, lng) {
+    document.getElementById('latInput').value = lat.toFixed(6);
+    document.getElementById('lngInput').value = lng.toFixed(6);
+  }
+
+  function updateMarkerFromInputs() {
+    const lat = parseFloat(document.getElementById('latInput').value);
+    const lng = parseFloat(document.getElementById('lngInput').value);
+
+    if (!isNaN(lat) && !isNaN(lng)) {
+      if (miniMarker) {
+        miniMarker.setLatLng([lat, lng]);
+      } else {
+        miniMarker = L.marker([lat, lng], { draggable: true }).addTo(miniMap);
+        miniMarker.on('dragend', (evt) => {
+          const pos = evt.target.getLatLng();
+          updateLatLngInputs(pos.lat, pos.lng);
+        });
+      }
+
+      miniMap.setView([lat, lng], 10);
+    }
+  }
+</script>
+
+  <script>
+  function deleteCamera(camId) {
+  if (!confirm("ยืนยันการลบกล้องนี้หรือไม่?")) return;
+
+  fetch(`/delete_camera/${camId}`, {
+    method: "POST",
+    headers: {
+      "X-Requested-With": "XMLHttpRequest",
+    }
+  })
+  .then(res => {
+    if (res.ok) {
+      // ลบ DOM ทันที ไม่ต้อง reload
+      const camEl = document.querySelector(`[data-camera-id="${camId}"]`);
+      if (camEl) camEl.remove();
+
+      // ลบ marker จากแผนที่ (ถ้ามี)
+      // * ถ้าคุณมี map marker refs แยกไว้ให้จัดการตรงนี้ด้วย
+
+      // ถ้าไม่มีเหลือเลย แสดงข้อความ
+      if (document.querySelectorAll('.video-wrapper').length === 0) {
+        document.getElementById('noCameraMsg')?.classList.remove('hidden');
+      }
+    } else {
+      alert("เกิดข้อผิดพลาดในการลบกล้อง");
+    }
+  })
+  .catch(err => {
+    console.error("Error:", err);
+    alert("ลบไม่สำเร็จ (มีข้อผิดพลาด)");
+  });
+}
   </script>
 </body>
 

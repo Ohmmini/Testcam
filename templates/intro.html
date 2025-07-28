@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Intro Video</title>
+  <style>
+    html, body {
+      margin: 0; 
+      padding: 0; 
+      height: 100%;
+      background: black;
+      overflow: hidden;
+    }
+    #introVideo {
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain; /* สำคัญ */
+      display: block;
+      pointer-events: none;
+      background: black;
+    }
+
+    /* กรณีมือถือ */
+    @media (max-width: 600px) {
+      #introVideo {
+        height: 100vh;  /* ใช้ 100vh เต็มความสูงหน้าจอมือถือ */
+        width: 100vw;   /* เต็มความกว้าง */
+        object-fit: contain;
+      }
+    }
+  </style>
+</head>
+<body>
+  <video id="introVideo" autoplay muted playsinline preload="auto">
+    <source src="{{ url_for('static', filename='DS_Opening.mp4') }}" type="video/mp4" />
+    วิดีโอไม่สามารถเล่นได้
+  </video>
+
+  <script>
+    const video = document.getElementById('introVideo');
+    video.addEventListener('ended', () => {
+      window.location.href = "/opening";
+    });
+  </script>
+</body>
+</html>

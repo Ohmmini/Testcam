@@ -3,99 +3,410 @@
 <head>
   <meta charset="UTF-8" />
   <title>AQI - แม่ฮ่องสอน</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     html, body {
-      margin: 0; padding: 0; height: 100%;
+      margin: 0;
+      padding: 0;
       font-family: 'Kanit', sans-serif;
+      background-color: #f5f5f5;
+      height: 100%;
+      overflow: hidden;
     }
+
+h1 {
+  text-align: center;
+  margin: 16px 10px 8px;
+  color: #333;
+  font-size: 16px; /* เล็กลง */
+  font-weight: 600;
+}
+    #container {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      padding: 0 10px 20px 10px;
+      max-width: 1200px;
+      margin: 0 auto 30px;
+      max-height: 90vh;
+      overflow: hidden;
+    }
+
+    #info-container {
+      width: 320px;
+      min-width: 280px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 16px 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      font-size: 14px;
+      color: #222;
+      line-height: 1.4;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    #info-container h2 {
+      font-size: 18px;
+      margin: 16px 0 8px;
+    }
+
+    .aqi-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+    }
+
+    .aqi-table th, .aqi-table td {
+      border-bottom: 1px solid #eee;
+      padding: 6px 8px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    #stations {
+      max-height: 150px;
+      overflow-y: auto;
+      border-top: 1px solid #ccc;
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+
+    .station-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 4px 0;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .station-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 60%;
+    }
+
     #map {
-      width: 100%; height: 100vh;
+      flex-grow: 1;
+      max-height: 90vh;
+      min-height: auto;
+      overflow: auto;
     }
+
+    /* ปรับขนาด popup leaflet */
     .leaflet-popup-content {
       font-size: 16px;
+    }
+
+    /* ปรับสเกลตามหน้าจอ */
+    @media (max-width: 768px) {
+      #container {
+        flex-direction: column;
+        height: auto;
+      }
+      #map {
+        order: 1; /* ให้แผนที่มาเป็นลำดับแรก */
+        height: 300px;
+      }
+      #info-container {
+        order: 2;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 12px 10px;
+        max-height: none;
+        height: auto;
+        margin-bottom: 10px;
+      }
+
+      .leaflet-popup-content {
+        font-size: 14px;  /* popup เล็กลงมือถือ */
+      }
+
+      .aqi-table th, .aqi-table td {
+        font-size: 11px;
+        padding: 4px 6px;
+      }
+
+      .station-item {
+        font-size: 11px;
+      }
+    }
+
+#back-button {
+  display: inline-block;
+  position: absolute;
+  top: 16px;
+  left: 32px; /* เดิมคือ 16px → ขยับมาทางขวา */
+  padding: 8px 16px; /* ใหญ่ขึ้นเล็กน้อย */
+  border-radius: 8px;
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+  font-size: 16px; /* เพิ่มจาก 14px */
+  z-index: 999;
+  transition: background-color 0.2s;
+}
+
+#back-button:hover {
+  background-color: #eee;
+}
+
+
+    .aqi-number-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .aqi-label {
+      font-weight: bold;
+      color: #000;
+      text-align: center;
+      line-height: 1;
+      /* font-size จะปรับใน JS */
     }
   </style>
 </head>
 <body>
-  <div id="map"></div>
+  <a href="/opening" id="back-button">&lt;</a>
+  <h1>คุณภาพอากาศจังหวัดแม่ฮ่องสอน</h1>
+
+  <div id="container">
+    <div id="info-container" role="region" aria-label="ข้อมูลหลักการและสถานี AQI">
+      <p>ดัชนีคุณภาพอากาศ (Air Quality Index - AQI) เป็นค่าที่บ่งบอกถึงระดับความสะอาดหรือมลพิษของอากาศในพื้นที่นั้นๆ โดยคำนวณจากปริมาณของมลพิษหลัก เช่น PM2.5 ซึ่งแบ่งระดับคุณภาพอากาศเป็น 6 ระดับตามค่า AQI เพื่อให้ประชาชนทราบและป้องกันสุขภาพได้อย่างเหมาะสม</p>
+
+      <h2>ระดับ AQI และความหมาย</h2>
+      <table class="aqi-table" aria-label="ตารางระดับ AQI">
+        <thead>
+          <tr><th>ระดับ</th><th>ค่า AQI</th><th>ความหมาย</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>😃</td><td>0–12</td><td>ดี</td></tr>
+          <tr><td>🙂</td><td>12.1–35.4</td><td>ปานกลาง</td></tr>
+          <tr><td>😐</td><td>35.5–55.4</td><td>เริ่มมีผล</td></tr>
+          <tr><td>😷</td><td>55.5–150.4</td><td>ไม่ดี</td></tr>
+          <tr><td>🤢</td><td>150.5–250.4</td><td>แย่มาก</td></tr>
+          <tr><td>☠️</td><td>250.5+</td><td>อันตราย</td></tr>
+        </tbody>
+      </table>
+
+      <h2>📍 รายการสถานี AQI</h2>
+      <div id="stations" aria-live="polite" aria-relevant="additions"></div>
+    </div>
+
+    <div id="map"></div>
+  </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     const mapCenter = [19.3022, 97.9654];
-    const map = L.map('map').setView(mapCenter, 10);
+    const defaultZoom = 10;
+    const mobileZoom = 7;
+
+    const map = L.map('map', {
+      center: mapCenter,
+      zoom: defaultZoom,
+      zoomControl: true,
+      dragging: true,
+      touchZoom: true,
+      scrollWheelZoom: true,
+      doubleClickZoom: true,
+      boxZoom: true,
+      tap: true
+    });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // ฟังก์ชันแปลงค่า AQI เป็นสี
-    function getColorByPM25(pm) {
-      if (typeof pm !== "number") return '#999999';
-      return pm <= 12 ? '#00e400' :       // ดี
-             pm <= 35.4 ? '#ffff00' :     // ปานกลาง
-             pm <= 55.4 ? '#ff7e00' :     // เริ่มมีผล
-             pm <= 150.4 ? '#ff0000' :    // ไม่ดี
-             pm <= 250.4 ? '#8f3f97' :    // แย่มาก
-                           '#7e0023';     // อันตราย
+    // ฟังก์ชันกำหนดขนาดสเกลตามหน้าจอ
+    function getCircleRadius() {
+      return window.innerWidth <= 768 ? 12 : 20;
     }
 
-    fetch('/api/maehongson_stations')
-      .then(response => response.json())
-      .then(data => {
+    function getIconSize() {
+      return window.innerWidth <= 768 ? 24 : 40;
+    }
+
+    function getIconAnchor() {
+      return window.innerWidth <= 768 ? [12, 12] : [20, 20];
+    }
+
+    function getLabelFontSize() {
+      return window.innerWidth <= 768 ? '12px' : '14px';
+    }
+
+    function getStationNameFontSize() {
+      return window.innerWidth <= 768 ? '10px' : '12px';
+    }
+
+    function getPopupFontSize() {
+      return window.innerWidth <= 768 ? '14px' : '16px';
+    }
+
+    // ปรับขนาด popup Leaflet ตามสเกล
+    function adjustPopupFontSize() {
+      const css = `.leaflet-popup-content { font-size: ${getPopupFontSize()} !important; }`;
+      let styleEl = document.getElementById('popup-style');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'popup-style';
+        document.head.appendChild(styleEl);
+      }
+      styleEl.innerHTML = css;
+    }
+
+    // ปรับ zoom ของแผนที่ตามหน้าจอ
+    function adjustMapZoom() {
+      if (window.innerWidth <= 768) {
+        map.setZoom(mobileZoom);
+      } else {
+        map.setZoom(defaultZoom);
+      }
+    }
+
+    window.addEventListener('load', () => {
+      adjustMapZoom();
+      adjustPopupFontSize();
+      fetchStations();
+    });
+
+    window.addEventListener('resize', () => {
+      adjustMapZoom();
+      adjustPopupFontSize();
+      // ถ้าอยากให้ markers ปรับขนาดตามหน้าจอที่เปลี่ยนจริงๆ อาจต้องลบและวาดใหม่ (ไม่ได้ทำในนี้)
+    });
+
+    // ฟังก์ชันสีตาม PM2.5
+    function getColorByPM25(pm) {
+      if (typeof pm !== "number") return '#999999';
+      return pm <= 12 ? '#00e400' :
+             pm <= 35.4 ? '#ffff00' :
+             pm <= 55.4 ? '#ff7e00' :
+             pm <= 150.4 ? '#ff0000' :
+             pm <= 250.4 ? '#8f3f97' :
+                           '#7e0023';
+    }
+
+    function getFaceEmoji(pm) {
+      if (typeof pm !== "number") return '❓';
+      return pm <= 12 ? '😃' :
+             pm <= 35.4 ? '🙂' :
+             pm <= 55.4 ? '😐' :
+             pm <= 150.4 ? '😷' :
+             pm <= 250.4 ? '🤢' :
+                           '☠️';
+    }
+
+    const cityCoords = {
+      "Mae Hi": [19.5, 97.8],
+      "Pai": [19.358, 98.436],
+      "Pang Mu": [19.144, 97.761],
+      "Wiang Nuea": [19.697, 97.983]
+    };
+
+    async function fetchStations() {
+      try {
+        const response = await fetch('/api/maehongson_stations', { cache: 'no-store' });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        const data = await response.json();
+
         if (data.error) {
           alert("ไม่พบข้อมูลสถานี AQI: " + data.error);
           return;
         }
-
         if (!data.stations || data.stations.length === 0) {
           alert("ไม่มีสถานี AQI ให้แสดง");
           return;
         }
 
-        data.stations.forEach(station => {
-          // เพิ่มตำแหน่ง latitude, longitude ให้กับแต่ละสถานี
-          // ถ้า API ยังไม่ส่งพิกัด ต้องใส่เอง เช่นจากฐานข้อมูลแยก
-          // ตัวอย่างนี้ ผมสมมติใส่พิกัดในโค้ด
-          const cityCoords = {
-            "Mae Hi": [19.5, 97.8],
-            "Pai": [19.358, 98.436],
-            "Pang Mu": [19.144, 97.761],
-            "Wiang Nuea": [19.697, 97.983]
-          };
+        data.stations.sort((a, b) => a.aqius - b.aqius);
 
+        const stationListEl = document.getElementById("stations");
+        stationListEl.innerHTML = '';
+
+        // เพิ่ม markers
+        data.stations.forEach(station => {
           const coords = cityCoords[station.city];
-          if (!coords) return; // ถ้าไม่มีพิกัดข้าม
+          if (!coords) return;
 
           const aqi = station.aqius;
-          const mainPollutant = station.main_pollutant ? station.main_pollutant.toUpperCase() : 'N/A';
-          const temp = station.temperature ?? 'N/A';
-          const humidity = station.humidity ?? 'N/A';
-          const wind = station.wind_speed ?? 'N/A';
-
+          const emoji = getFaceEmoji(aqi);
           const color = getColorByPM25(aqi);
 
-          L.circleMarker(coords, {
-            radius: 18,
-            color: color,
+          // วาดวงกลมสี ปรับ radius ตามสเกล
+          const circle = L.circleMarker(coords, {
+            radius: getCircleRadius(),
+            color: '#000',
             fillColor: color,
-            fillOpacity: 0.8
-          }).addTo(map).bindPopup(`
+            fillOpacity: 0.5,
+            weight: 1
+          }).addTo(map);
+
+          // แสดงเลข AQI บนแผนที่ ปรับขนาด font และ icon
+          const aqiNumberIcon = L.divIcon({
+            className: 'aqi-number-icon',
+            html: `<div class="aqi-label" style="font-size:${getLabelFontSize()}">${aqi}</div>`,
+            iconSize: [getIconSize(), getIconSize()],
+            iconAnchor: getIconAnchor()
+          });
+          L.marker(coords, { icon: aqiNumberIcon, interactive: false }).addTo(map);
+
+          // ชื่อสถานีใต้จุด ปรับขนาดฟอนต์
+          const stationNameIcon = L.divIcon({
+            className: '',
+            html: `<div style="
+              color:#222;
+              font-weight: 600;
+              font-size: ${getStationNameFontSize()};
+              margin-top: 4px;
+              text-align: center;
+              white-space: nowrap;
+              user-select:none;
+              pointer-events:none;
+              max-width: 100px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            ">${station.city}</div>`,
+            iconSize: [100, 20],
+            iconAnchor: [50, -10]
+          });
+          const nameLatLng = L.latLng(coords[0] - 0.0025, coords[1]);
+          L.marker(nameLatLng, {icon: stationNameIcon, interactive: false}).addTo(map);
+
+          // popup รายละเอียด
+          circle.bindPopup(`
             <strong>${station.city}</strong><br>
             AQI (US): ${aqi}<br>
-            ตัวปนเปื้อนหลัก: ${mainPollutant}<br>
-            อุณหภูมิ: ${temp} °C<br>
-            ความชื้น: ${humidity} %<br>
-            ความเร็วลม: ${wind} m/s
+            ตัวปนเปื้อนหลัก: ${station.main_pollutant?.toUpperCase() || 'N/A'}<br>
+            อุณหภูมิ: ${station.temperature ?? 'N/A'} °C<br>
+            ความชื้น: ${station.humidity ?? 'N/A'} %<br>
+            ความเร็วลม: ${station.wind_speed ?? 'N/A'} m/s
           `);
+
+          // รายการสถานีด้านข้าง
+          const listItem = document.createElement('div');
+          listItem.className = 'station-item';
+          listItem.innerHTML = `
+            <span class="station-name" title="${station.city}">${station.city}</span>
+            <span style="color:${color}">${aqi} ${emoji}</span>
+          `;
+          stationListEl.appendChild(listItem);
         });
-      })
-      .catch(err => {
-        console.error("โหลดข้อมูลสถานี AQI ล้มเหลว", err);
-        alert("โหลดข้อมูลสถานี AQI ล้มเหลว");
-      });
+      } catch (err) {
+        console.error("โหลดข้อมูลสถานี AQI ล้มเหลว:", err);
+        alert("โหลดข้อมูลสถานี AQI ล้มเหลว: " + err.message);
+      }
+    }
   </script>
 </body>
 </html>

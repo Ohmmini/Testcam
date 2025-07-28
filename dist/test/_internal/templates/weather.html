@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>AQI - แม่ฮ่องสอน</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      font-family: 'Kanit', sans-serif;
+    }
+    #map {
+      width: 100%; height: 100vh;
+    }
+    .leaflet-popup-content {
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const mapCenter = [19.3022, 97.9654];
+    const map = L.map('map').setView(mapCenter, 10);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // ฟังก์ชันแปลงค่า AQI เป็นสี
+    function getColorByPM25(pm) {
+      if (typeof pm !== "number") return '#999999';
+      return pm <= 12 ? '#00e400' :       // ดี
+             pm <= 35.4 ? '#ffff00' :     // ปานกลาง
+             pm <= 55.4 ? '#ff7e00' :     // เริ่มมีผล
+             pm <= 150.4 ? '#ff0000' :    // ไม่ดี
+             pm <= 250.4 ? '#8f3f97' :    // แย่มาก
+                           '#7e0023';     // อันตราย
+    }
+
+    fetch('/api/maehongson_stations')
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          alert("ไม่พบข้อมูลสถานี AQI: " + data.error);
+          return;
+        }
+
+        if (!data.stations || data.stations.length === 0) {
+          alert("ไม่มีสถานี AQI ให้แสดง");
+          return;
+        }
+
+        data.stations.forEach(station => {
+          // เพิ่มตำแหน่ง latitude, longitude ให้กับแต่ละสถานี
+          // ถ้า API ยังไม่ส่งพิกัด ต้องใส่เอง เช่นจากฐานข้อมูลแยก
+          // ตัวอย่างนี้ ผมสมมติใส่พิกัดในโค้ด
+          const cityCoords = {
+            "Mae Hi": [19.5, 97.8],
+            "Pai": [19.358, 98.436],
+            "Pang Mu": [19.144, 97.761],
+            "Wiang Nuea": [19.697, 97.983]
+          };
+
+          const coords = cityCoords[station.city];
+          if (!coords) return; // ถ้าไม่มีพิกัดข้าม
+
+          const aqi = station.aqius;
+          const mainPollutant = station.main_pollutant ? station.main_pollutant.toUpperCase() : 'N/A';
+          const temp = station.temperature ?? 'N/A';
+          const humidity = station.humidity ?? 'N/A';
+          const wind = station.wind_speed ?? 'N/A';
+
+          const color = getColorByPM25(aqi);
+
+          L.circleMarker(coords, {
+            radius: 18,
+            color: color,
+            fillColor: color,
+            fillOpacity: 0.8
+          }).addTo(map).bindPopup(`
+            <strong>${station.city}</strong><br>
+            AQI (US): ${aqi}<br>
+            ตัวปนเปื้อนหลัก: ${mainPollutant}<br>
+            อุณหภูมิ: ${temp} °C<br>
+            ความชื้น: ${humidity} %<br>
+            ความเร็วลม: ${wind} m/s
+          `);
+        });
+      })
+      .catch(err => {
+        console.error("โหลดข้อมูลสถานี AQI ล้มเหลว", err);
+        alert("โหลดข้อมูลสถานี AQI ล้มเหลว");
+      });
+  </script>
+</body>
+</html>

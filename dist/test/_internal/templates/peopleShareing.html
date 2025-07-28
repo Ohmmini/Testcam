@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>peopleSharing + โปรไฟล์</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    .hidden { display: none !important; }
+
+    #formOverlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(255, 255, 255, 0.95);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+    #popupOverlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999;
+    }
+    #popupOverlay img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 8px;
+      box-shadow: 0 0 10px white;
+    }
+    form {
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border: 1px solid #D1D5DB;
+      border-radius: 0.5rem;
+      background: white;
+      padding: 2rem;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+      position: relative;
+    }
+
+    form > button[type="button"] {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      font-size: 1.5rem;
+      color: #6B7280;
+      font-weight: 700;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: color 0.2s ease-in-out;
+    }
+
+    form > button[type="button"]:hover {
+      color: #EF4444;
+    }
+
+    #formMap {
+      width: 100%;
+      height: 16rem;
+      border-radius: 0.375rem;
+      border: 1px solid #D1D5DB;
+    }
+
+      .truncate-multiline-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+
+  <!-- ปุ่มเพิ่ม -->
+  <button onclick="toggleForm()" title="เพิ่มสถานที่"
+          class="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-blue-600 text-white text-3xl shadow-lg hover:bg-blue-700 z-50">
+    +
+  </button>
+
+  <!-- ฟอร์มซ่อน/แสดง -->
+  <div id="formOverlay" class="hidden">
+    <form method="POST" enctype="multipart/form-data">
+      <button type="button" onclick="toggleForm()">×</button>
+
+      <h2 class="text-2xl font-bold text-blue-600 mb-4">เพิ่มสถานที่ / ร้านอาหาร</h2>
+
+      <div class="mb-4">
+        <label for="category" class="block mb-1 font-semibold">ประเภท</label>
+        <select id="category" name="category" required class="w-full border border-gray-300 rounded-md p-2">
+          <option value="" disabled selected>เลือกประเภท</option>
+          <option value="ร้านอาหาร">ร้านอาหาร</option>
+          <option value="สถานที่ท่องเที่ยว">สถานที่ท่องเที่ยว</option>
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <label for="name" class="block mb-1 font-semibold">ชื่อสถานที่/ร้าน</label>
+        <input id="name" name="name" type="text" required placeholder="เช่น วัดพระธาตุดอยกองมู"
+               class="w-full border border-gray-300 rounded-md p-2" />
+      </div>
+
+      <div class="mb-4">
+        <label for="description" class="block mb-1 font-semibold">คำอธิบาย</label>
+        <textarea id="description" name="description" rows="3" required placeholder="รายละเอียดเพิ่มเติม"
+                  class="w-full border border-gray-300 rounded-md p-2 resize-none"></textarea>
+      </div>
+
+      <div class="mb-4">
+        <label class="block mb-1 font-semibold">เลือกตำแหน่งจากแผนที่</label>
+        <div id="formMap"></div>
+        <input type="hidden" id="latitude" name="latitude" />
+        <input type="hidden" id="longitude" name="longitude" />
+      </div>
+
+      <div class="mb-4">
+        <label for="file" class="block mb-1 font-semibold">อัปโหลดรูปภาพหรือวิดีโอ</label>
+        <input id="file" type="file" name="file" accept="image/*,video/*" required
+               class="w-full border border-gray-300 rounded-md p-2 bg-white text-gray-700" />
+      </div>
+
+      <div class="mb-4">
+  <label for="phone" class="block mb-1 font-semibold">เบอร์ติดต่อ (ไม่บังคับ)</label>
+  <input id="phone" name="phone" type="tel" pattern="[0-9+()-\s]*" placeholder="0812345678 หรือ +66812345678"
+         class="w-full border border-gray-300 rounded-md p-2" />
+</div>
+
+      <div class="mb-4">
+        <label for="uploader" class="block mb-1 font-semibold">ชื่อผู้โพสต์ (ไม่บังคับ)</label>
+        <input id="uploader" name="uploader" type="text" placeholder="ชื่อของคุณ"
+               class="w-full border border-gray-300 rounded-md p-2" />
+      </div>
+
+      <button type="submit"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-md transition">
+        ส่งข้อมูล
+      </button>
+    </form>
+  </div>
+
+  <div class="back-button">
+    <a href="{{ url_for('opening') }}" style="font-size: 2rem; text-decoration: none; color: inherit;">
+      &lt;
+    </a>
+  </div>
+<div class="max-w-7xl mx-auto mt-6 px-2 flex justify-end">
+  <div>
+    <label for="categoryFilter" class="block text-sm font-semibold mb-1 text-right">กรองตามประเภท</label>
+    <select id="categoryFilter" class="border border-gray-300 rounded-md p-2">
+      <option value="all">ทั้งหมด</option>
+      <option value="ร้านอาหาร">ร้านอาหาร</option>
+      <option value="สถานที่ท่องเที่ยว">สถานที่ท่องเที่ยว</option>
+    </select>
+  </div>
+</div>
+<script>
+  document.getElementById('categoryFilter').addEventListener('change', function () {
+    const selected = this.value;
+    const cards = document.querySelectorAll('[data-category]');
+    
+    cards.forEach(card => {
+      const category = card.getAttribute('data-category');
+      card.style.display = (selected === 'all' || selected === category) ? 'flex' : 'none';
+    });
+  });
+</script>
+
+  <!-- รายการโปรไฟล์ -->
+  <div class="max-w-7xl mx-auto mt-12 px-2">
+    <div
+      class="grid gap-x-2 gap-y-6 justify-items-start"
+      style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));"
+    >
+      {% for profile in profiles %}
+      <div class="bg-white rounded-xl shadow p-4 flex flex-col justify-between w-[300px] h-[400px]"
+     data-category="{{ profile.category }}">
+        <h3 class="text-xl font-bold text-blue-700 mb-2">{{ profile.name }}</h3>
+        <p class="mb-1 font-medium text-gray-700">ประเภท: {{ profile.category }}</p>
+        <p class="mb-2 whitespace-pre-line text-gray-700 text-sm flex-grow truncate-multiline-3">{{ profile.description }}</p>
+        <p class="text-sm italic text-gray-500 mb-2">โพสต์โดย: {{ profile.uploader or 'ไม่ระบุชื่อ' }}</p>
+        <p class="text-sm text-gray-600 mb-2">📞 ติดต่อ: {{ profile.phone }}</p>
+
+
+        <div class="rounded-md overflow-hidden shadow h-48">
+          {% if profile.media_url %}
+            {% set ext = profile.media_url.rsplit('.', 1)[-1].lower() %}
+            {% if ext in ['mp4', 'webm', 'ogg'] %}
+              <video autoplay muted loop playsinline class="w-full h-full object-cover rounded-md" preload="metadata">
+              <source src="{{ profile.media_url }}" type="video/{{ ext }}">
+               วิดีโอนี้ไม่รองรับเบราว์เซอร์ของคุณ
+              </video>
+
+            {% else %}
+              <img src="{{ profile.media_url }}" alt="รูปสถานที่"
+                   class="w-full h-full object-cover rounded-md cursor-pointer"
+                   onclick="showPopup('{{ profile.media_url }}')" />
+            {% endif %}
+          {% else %}
+            <p class="text-gray-400 italic text-center mt-4">ไม่มีสื่อแนะนำ</p>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div id="popupOverlay" onclick="hidePopup()">
+    <img id="popupImage" src="" alt="รูปเต็ม" />
+  </div>
+
+  <script>
+    function toggleForm() {
+      const form = document.getElementById("formOverlay");
+      form.classList.toggle("hidden");
+      if (!form.classList.contains("hidden")) {
+        setTimeout(() => {
+          formMap.invalidateSize();
+        }, 200);
+      }
+    }
+
+    let formMap = L.map('formMap').setView([19.3, 97.966], 9);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(formMap);
+
+    let formMarker;
+    formMap.on('click', function (e) {
+      const lat = e.latlng.lat.toFixed(6);
+      const lng = e.latlng.lng.toFixed(6);
+      document.getElementById("latitude").value = lat;
+      document.getElementById("longitude").value = lng;
+
+      if (formMarker) {
+        formMarker.setLatLng(e.latlng);
+      } else {
+        formMarker = L.marker(e.latlng).addTo(formMap);
+      }
+    });
+
+    function showPopup(src) {
+      document.getElementById("popupImage").src = src;
+      document.getElementById("popupOverlay").style.display = "flex";
+    }
+
+    function hidePopup() {
+      document.getElementById("popupOverlay").style.display = "none";
+    }
+  </script>
+
+</body>
+</html>
