@@ -1,0 +1,128 @@
+<style>
+    body {
+        background-color: #0d1117;
+        font-family: 'Segoe UI', sans-serif;
+        color: #f0f6fc;
+        margin: 0;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .filter-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+        align-items: center;
+        background: #161b22;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+        margin-bottom: 2rem;
+        border: 1px solid #30363d;
+    }
+
+    .filter-form label {
+        font-weight: 600;
+        margin-right: 0.4rem;
+        color: #c9d1d9;
+    }
+
+    .filter-form select,
+    .filter-form button {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        background-color: #0d1117;
+        color: #f0f6fc;
+    }
+
+    .filter-form button {
+        background-color: #238636;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .filter-form button:hover {
+        background-color: #2ea043;
+    }
+
+    .video-card {
+        background-color: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        width: 100%;
+        max-width: 640px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+        text-align: center;
+    }
+
+    .video-card h3 {
+        color: #58a6ff;
+        margin: 0 0 0.5rem;
+    }
+
+    .video-card p {
+        color: #8b949e;
+        margin: 0 0 1rem;
+    }
+
+    video {
+        width: 100%;
+        border-radius: 8px;
+    }
+</style>
+
+
+<form method="get" class="filter-form">
+    <div>
+        <label for="location">สถานที่:</label>
+        <select name="location" id="location">
+            <option value="">ทั้งหมด</option>
+            {% for loc in all_locations %}
+            <option value="{{ loc }}" {% if request.args.get('location') == loc %}selected{% endif %}>{{ loc }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
+        <label for="date">วันที่:</label>
+        <select name="date" id="date">
+            <option value="">ทั้งหมด</option>
+            {% for d in all_dates %}
+            <option value="{{ d }}" {% if request.args.get('date') == d %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
+        <label for="time">เวลา:</label>
+        <select name="time" id="time">
+            <option value="">ทั้งหมด</option>
+            {% for t in all_times %}
+            <option value="{{ t }}" {% if request.args.get('time') == t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
+        <button type="submit">ค้นหา</button>
+    </div>
+</form>
+
+{% for r in recordings %}
+<div class="video-card">
+    <h3>{{ r.location }}</h3>
+    <p>{{ r.date }} เวลา {{ r.time }}</p>
+    <video controls>
+        <source src="{{ r.url }}" type="video/mp4">
+        เบราว์เซอร์ของคุณไม่รองรับ video tag
+    </video>
+</div>
+{% endfor %}
